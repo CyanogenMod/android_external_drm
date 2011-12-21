@@ -20,6 +20,8 @@
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
+DISTCHECK_CONFIGURE_FLAGS = --enable-nouveau-experimental-api --enable-radeon-experimental-api
+
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm.pc
 
@@ -50,6 +52,8 @@ endif
 if HAVE_FREEDRENO
 FREEDRENO_SUBDIR = freedreno
 endif
+# Import variable LIBDRM_SOURCES.
+include sources.mk
 
 SUBDIRS = . $(LIBKMS_SUBDIR) $(INTEL_SUBDIR) $(NOUVEAU_SUBDIR) $(RADEON_SUBDIR) $(OMAP_SUBDIR) $(EXYNOS_SUBDIR) $(FREEDRENO_SUBDIR) tests include man
 
@@ -63,11 +67,7 @@ AM_CFLAGS = \
 	$(VALGRIND_CFLAGS)
 
 libdrm_la_SOURCES =				\
-	xf86drm.c				\
-	xf86drmHash.c				\
-	xf86drmRandom.c				\
-	xf86drmSL.c				\
-	xf86drmMode.c				\
+	$(LIBDRM_SOURCES)			\
 	xf86atomic.h				\
 	libdrm_lists.h
 

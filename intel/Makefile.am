@@ -22,6 +22,9 @@
 # Authors:
 #    Eric Anholt <eric@anholt.net>
 
+# Import variable LIBDRM_INTEL_SOURCES.
+include sources.mk
+
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
 	-I$(top_srcdir) \
@@ -40,13 +43,9 @@ libdrm_intel_la_LIBADD = ../libdrm.la \
 	@CLOCK_LIB@
 
 libdrm_intel_la_SOURCES = \
-	intel_bufmgr.c \
+	$(LIBDRM_INTEL_SOURCES) \
 	intel_bufmgr_priv.h \
-	intel_bufmgr_fake.c \
-	intel_bufmgr_gem.c \
-	intel_decode.c \
 	intel_chipset.h \
-	mm.c \
 	mm.h
 
 intel_bufmgr_gem_o_CFLAGS = $(AM_CFLAGS) -c99
