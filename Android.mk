@@ -1,5 +1,5 @@
 #
-# Copyright © 2011 Intel Corporation
+# Copyright © 2011-2012 Intel Corporation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -45,6 +45,16 @@ LOCAL_C_INCLUDES := \
 LOCAL_CFLAGS := \
 	-DHAVE_LIBDRM_ATOMIC_PRIMITIVES=1
 
+LOCAL_COPY_HEADERS :=            \
+	xf86drm.h                \
+	include/drm/drm_fourcc.h \
+	include/drm/drm.h        \
+	include/drm/drm_mode.h   \
+	include/drm/drm_sarea.h  \
+	include/drm/i915_drm.h   \
+	intel/intel_bufmgr.h     \
+
+LOCAL_COPY_HEADERS_TO := libdrm
 include $(BUILD_SHARED_LIBRARY)
 
 include $(LOCAL_PATH)/intel/Android.mk
