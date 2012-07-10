@@ -172,7 +172,13 @@ int drm_intel_bo_flink(drm_intel_bo *bo, uint32_t * name)
 
 	return -ENODEV;
 }
+int drm_intel_bo_prime(drm_intel_bo *bo, uint32_t * name)
+{
+	if (bo->bufmgr->bo_prime)
+		return bo->bufmgr->bo_prime(bo, name);
 
+	return -ENODEV;
+}
 int
 drm_intel_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 			drm_intel_bo *target_bo, uint32_t target_offset,

@@ -223,6 +223,14 @@ struct _drm_intel_bufmgr {
 	int (*bo_flink) (drm_intel_bo *bo, uint32_t * name);
 
 	/**
+	 * Create a dma-buf prime fd for a buffer which can be used by other apps
+	 *
+	 * \param buf Buffer to create a prime fd for
+	 * \param prime_fd Returned prime fd
+	 */
+	int (*bo_prime) (drm_intel_bo *bo, uint32_t * prime_fd);
+
+	/**
 	 * Returns 1 if mapping the buffer for write could cause the process
 	 * to block, due to the object being active in the GPU.
 	 */

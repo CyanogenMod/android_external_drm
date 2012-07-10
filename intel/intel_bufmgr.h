@@ -153,6 +153,7 @@ int drm_intel_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 int drm_intel_bo_get_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 			    uint32_t * swizzle_mode);
 int drm_intel_bo_flink(drm_intel_bo *bo, uint32_t * name);
+int drm_intel_bo_prime(drm_intel_bo *bo, uint32_t * name);
 int drm_intel_bo_busy(drm_intel_bo *bo);
 int drm_intel_bo_madvise(drm_intel_bo *bo, int madv);
 
@@ -162,6 +163,9 @@ int drm_intel_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo);
 
 /* drm_intel_bufmgr_gem.c */
 drm_intel_bufmgr *drm_intel_bufmgr_gem_init(int fd, int batch_size);
+drm_intel_bo *drm_intel_bo_gem_create_from_prime_fd(drm_intel_bufmgr *bufmgr,
+                                   const char *name,
+                                   unsigned int prime_fd);
 drm_intel_bo *drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 						const char *name,
 						unsigned int handle);

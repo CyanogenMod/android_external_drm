@@ -848,6 +848,60 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 }
 
 /**
+ * Returns a drm_intel_bo wrapping the given buffer prime fd name
+ *
+ * This can be used when one application needs to pass a buffer
+ * object to another thru dma-buf sharing.
+ */
+drm_intel_bo *
+drm_intel_bo_gem_create_from_prime_fd(drm_intel_bufmgr *bufmgr,
+                                   const char *name,
+                                   unsigned int prime_fd)
+{
+    drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
+    drm_intel_bo_gem *bo_gem;
+    int ret;
+    struct drm_prime_handle prime;
+    struct drm_i915_gem_get_tiling get_tiling;
+    bo_gem = calloc(1, sizeof(*bo_gem));
+    if (!bo_gem)
+        return NULL;
+    VG_CLEAR(prime);
+    prime.fd = prime_fd;
+    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE, &prime);
+    if (ret || !prime.handle){
+        DBG("Couldn't reference %s handle 0x%08x: %s\n",
+            name, prime_fd, strerror(errno));
+            free(bo_gem);
+            return NULL;
+    }
+	bo_gem->bo.offset = 0;
+	bo_gem->bo.virtual = NULL;
+	bo_gem->bo.bufmgr = bufmgr;
+	bo_gem->name = name;
+	atomic_set(&bo_gem->refcount, 1);
+	bo_gem->validate_index = -1;
+	bo_gem->gem_handle = prime.handle;
+	bo_gem->bo.handle = prime.handle;
+	bo_gem->global_name = prime_fd;
+	bo_gem->reusable = false;
+	VG_CLEAR(get_tiling);
+	get_tiling.handle = bo_gem->gem_handle;
+	ret = drmIoctl(bufmgr_gem->fd,
+		       DRM_IOCTL_I915_GEM_GET_TILING,
+		       &get_tiling);
+	if (ret != 0) {
+		drm_intel_gem_bo_unreference(&bo_gem->bo);
+		return NULL;
+	}
+	bo_gem->tiling_mode = get_tiling.tiling_mode;
+	bo_gem->swizzle_mode = get_tiling.swizzle_mode;
+	DBG("bo_create_from_handle: %d (%s)\n", prime_fd, bo_gem->name);
+	return &bo_gem->bo;
+}
+
+
+/**
  * Returns a drm_intel_bo wrapping the given buffer object handle.
  *
  * This can be used when one application needs to pass a buffer object
@@ -2612,6 +2666,30 @@ drm_intel_gem_bo_flink(drm_intel_bo *bo, uint32_t * name)
 	return 0;
 }
 
+static int
+drm_intel_gem_bo_prime(drm_intel_bo *bo, uint32_t * prime_fd)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	int ret;
+
+	if (!bo_gem->global_name) {
+		struct drm_prime_handle prime;
+		VG_CLEAR(prime);
+		prime.handle = bo_gem->gem_handle;
+
+		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_PRIME_HANDLE_TO_FD, &prime);
+		if (ret != 0)
+			return -errno;
+		bo_gem->global_name = prime.fd;
+		bo_gem->reusable = false;
+
+	}
+
+	*prime_fd = bo_gem->global_name;
+	return 0;
+}
+
 /**
  * Enables unlimited caching of buffer objects for reuse.
  *
@@ -3344,6 +3422,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	bufmgr_gem->bufmgr.bo_get_tiling = drm_intel_gem_bo_get_tiling;
 	bufmgr_gem->bufmgr.bo_set_tiling = drm_intel_gem_bo_set_tiling;
 	bufmgr_gem->bufmgr.bo_flink = drm_intel_gem_bo_flink;
+	bufmgr_gem->bufmgr.bo_prime = drm_intel_gem_bo_prime;
 	/* Use the new one if available */
 	if (exec2) {
 		bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec2;
