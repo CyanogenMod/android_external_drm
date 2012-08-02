@@ -90,6 +90,8 @@ struct _drm_intel_bo {
 	 * entries when calling drm_intel_bo_emit_reloc()
 	 */
 	uint64_t offset64;
+
+	int usesRS;
 };
 
 enum aub_dump_bmp_format {
