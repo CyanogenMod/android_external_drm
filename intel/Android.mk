@@ -21,11 +21,6 @@
 # IN THE SOFTWARE.
 #
 
-LIBDRM_INTEL_VALID_GPU_DRIVERS := i915 i965
-
-# Skip this makefile if we're not building for an Intel GPU.
-ifneq ($(filter $(BOARD_GPU_DRIVERS), $(LIBDRM_INTEL_VALID_GPU_DRIVERS)),)
-
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -54,4 +49,3 @@ LOCAL_SHARED_LIBRARIES := \
 
 include $(BUILD_SHARED_LIBRARY)
 
-endif # BOARD_GPU_DRIVERS

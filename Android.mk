@@ -21,11 +21,6 @@
 # IN THE SOFTWARE.
 #
 
-LIBDRM_VALID_GPU_DRIVERS := i915 i965
-
-# Skip this makefile if we're not building for a known GPU.
-ifneq ($(filter $(BOARD_GPU_DRIVERS), $(LIBDRM_VALID_GPU_DRIVERS)),)
-
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -59,4 +54,3 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(LOCAL_PATH)/intel/Android.mk
 
-endif # BOARD_GPU_DRIVERS
