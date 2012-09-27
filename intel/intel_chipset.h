@@ -159,6 +159,8 @@
 #define PCI_CHIP_VALLEYVIEW_1		0x0f31
 #define PCI_CHIP_VALLEYVIEW_2		0x0f32
 #define PCI_CHIP_VALLEYVIEW_3		0x0f33
+#define PCI_CHIP_VALLEYVIEW_M           0x0157
+#define PCI_CHIP_VALLEYVIEW_D           0x0155
 
 #define PCI_CHIP_CHERRYVIEW_0		0x22b0
 #define PCI_CHIP_CHERRYVIEW_1		0x22b1
@@ -240,7 +242,9 @@
 #define IS_VALLEYVIEW(devid)	((devid) == PCI_CHIP_VALLEYVIEW_PO || \
 				 (devid) == PCI_CHIP_VALLEYVIEW_1 || \
 				 (devid) == PCI_CHIP_VALLEYVIEW_2 || \
-				 (devid) == PCI_CHIP_VALLEYVIEW_3)
+				 (devid) == PCI_CHIP_VALLEYVIEW_3 || \
+		                 (devid) == PCI_CHIP_VALLEYVIEW_M  || \
+		                 (devid) == PCI_CHIP_VALLEYVIEW_D )
 
 #define IS_HSW_GT1(devid)	((devid) == PCI_CHIP_HASWELL_GT1 || \
 				 (devid) == PCI_CHIP_HASWELL_M_GT1 || \
