@@ -38,7 +38,7 @@ LOCAL_C_INCLUDES := \
 	$(LIBDRM_TOP) \
 	$(LIBDRM_TOP)/intel \
 	$(LIBDRM_TOP)/include/drm \
-	external/libpciaccess/include
+	external/PRIVATE/libpciaccess/include
 
 LOCAL_CFLAGS := \
 	-DHAVE_LIBDRM_ATOMIC_PRIMITIVES=1
