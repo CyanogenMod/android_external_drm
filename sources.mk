@@ -27,4 +27,5 @@ LIBDRM_SOURCES := \
 	xf86drmHash.c \
 	xf86drmRandom.c \
 	xf86drmSL.c \
-	xf86drmMode.c
+	xf86drmMode.c \
+	xf86drmCSC.c

@@ -58,6 +58,7 @@
 #endif
 
 #include "xf86drm.h"
+#include "i915_drm.h"
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
 #define DRM_MAJOR 145
@@ -2571,3 +2572,25 @@ int drmPrimeFDToHandle(int fd, int prime_fd, uint32_t *handle)
 	return 0;
 }
 
+/**
+ * Wide Gamut control support
+ */
+int drmCSCIoctl(int fd, struct CSCCoeff_Matrix *CSC_Matrix)
+{
+    int ret;
+    struct CSC_Coeff *CSCCoeff;
+    if ((CSC_Matrix == NULL) || (CSC_Matrix->CoeffMatrix == NULL)) {
+        printf("Invalid parameters, pass valid coeff matrix\n");
+        return -1;
+    }
+
+    CSCCoeff = (struct CSC_Coeff *)malloc(sizeof(struct CSC_Coeff));
+    calc_coeff(CSC_Matrix->CoeffMatrix, CSCCoeff->VLV_CSC_Coeff);
+    CSCCoeff->crtc_id = CSC_Matrix->crtc_id;
+
+    do {
+        ret = ioctl(fd, DRM_IOCTL_I915_SET_CSC, CSCCoeff);
+    } while (ret == -1 && (errno == EINTR || errno == EAGAIN));
+
+    return ret;
+}

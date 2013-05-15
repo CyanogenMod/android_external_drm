@@ -341,6 +341,11 @@ typedef struct _drmSetVersion {
 	int drm_dd_minor;
 } drmSetVersion, *drmSetVersionPtr;
 
+struct CSCCoeff_Matrix {
+        unsigned int crtc_id;
+        float CoeffMatrix[9];
+};
+
 #define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)
 
 #define DRM_LOCK_HELD  0x80000000U /**< Hardware lock is held */
@@ -708,6 +713,7 @@ extern void drmMsg(const char *format, ...) DRM_PRINTFLIKE(1, 2);
 
 extern int drmSetMaster(int fd);
 extern int drmDropMaster(int fd);
+extern int drmCSCIoctl(int fd, struct CSCCoeff_Matrix *CSC_Matrix);
 
 #define DRM_EVENT_CONTEXT_VERSION 2
 
