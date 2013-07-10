@@ -45,7 +45,8 @@ LOCAL_CFLAGS := \
 
 LOCAL_SHARED_LIBRARIES := \
 	libdrm \
-	libpciaccess
+	libpciaccess \
+	libsync
 
 include $(BUILD_SHARED_LIBRARY)
 

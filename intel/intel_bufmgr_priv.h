@@ -171,14 +171,16 @@ struct _drm_intel_bufmgr {
 	/** Executes the command buffer pointed to by bo. */
 	int (*bo_exec) (drm_intel_bo *bo, int used,
 			drm_clip_rect_t *cliprects, int num_cliprects,
-			int DR4);
+			int DR4, int fence_in, int *fence_out);
 
 	/** Executes the command buffer pointed to by bo on the selected
 	 * ring buffer
 	 */
 	int (*bo_mrb_exec) (drm_intel_bo *bo, int used,
 			    drm_clip_rect_t *cliprects, int num_cliprects,
-			    int DR4, unsigned flags);
+			    int DR4, unsigned flags,
+				int fence_in, int *fence_out);
+
 
 	/**
 	 * Pin a buffer to the aperture and fix the offset until unpinned

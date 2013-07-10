@@ -40,6 +40,7 @@
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
 #include "xf86drm.h"
+#include <linux/sync.h>
 
 /** @file intel_bufmgr.c
  *
@@ -128,11 +129,60 @@ void drm_intel_bufmgr_destroy(drm_intel_bufmgr *bufmgr)
 	bufmgr->destroy(bufmgr);
 }
 
+
+int
+do_fence_wait(int fd)
+{
+	/* Temporary solution waits in userland */
+	int rc = -ENOENT;
+	struct sync_fence_info_data *info;
+
+	if (fd >= 0) {
+                /* KMD doesn't currently support this so
+                * wait on the fence here instead. This
+                * is a blocking wait so it is not friendly
+                * to the caller...
+                */
+                sync_wait(fd, -1);
+
+                info = sync_fence_info(fd);
+
+                if (info->status != 1) {
+                        rc = -ETIMEDOUT;
+		} else
+			rc = 0;
+
+                sync_fence_info_free(info);
+
+		/* Ownership is transferred so close it */
+		close(fd);
+	}
+
+	return rc;
+}
+
 int
 drm_intel_bo_exec(drm_intel_bo *bo, int used,
 		  drm_clip_rect_t * cliprects, int num_cliprects, int DR4)
 {
-	return bo->bufmgr->bo_exec(bo, used, cliprects, num_cliprects, DR4);
+	return bo->bufmgr->bo_exec(bo, used, cliprects, num_cliprects, DR4, -1, NULL);
+}
+
+int
+drm_intel_bo_fence_exec(drm_intel_bo *bo, int used,
+		  drm_clip_rect_t * cliprects, int num_cliprects, int DR4,
+			int fence_in, int* fence_out)
+{
+	if (fence_out)
+		*fence_out = -1;
+
+	/* Temporary measure: KMD cannot support fence_in so block on
+	* it here instead */
+	if (fence_in >= 0)
+		do_fence_wait(fence_in);
+
+	return bo->bufmgr->bo_exec(bo, used, cliprects, num_cliprects, DR4,
+				fence_in, fence_out);
 }
 
 int
@@ -143,17 +193,50 @@ drm_intel_bo_mrb_exec(drm_intel_bo *bo, int used,
 	if (bo->bufmgr->bo_mrb_exec)
 		return bo->bufmgr->bo_mrb_exec(bo, used,
 					cliprects, num_cliprects, DR4,
-					rings);
+					rings, -1, NULL);
 
 	switch (rings) {
 	case I915_EXEC_DEFAULT:
 	case I915_EXEC_RENDER:
 		return bo->bufmgr->bo_exec(bo, used,
-					   cliprects, num_cliprects, DR4);
+					   cliprects, num_cliprects, DR4,
+						-1, NULL);
 	default:
 		return -ENODEV;
 	}
 }
+
+int
+drm_intel_bo_mrb_fence_exec(drm_intel_bo *bo, int used,
+		drm_clip_rect_t *cliprects, int num_cliprects, int DR4,
+		unsigned int rings, int fence_in, int* fence_out)
+{
+	if (fence_out)
+		*fence_out = -1;
+
+	/* Temporary measure: KMD cannot support fence_in so block on
+	* it here instead */
+	if (fence_in >= 0)
+		do_fence_wait(fence_in);
+
+	if (bo->bufmgr->bo_mrb_exec)
+		return bo->bufmgr->bo_mrb_exec(bo, used,
+					cliprects, num_cliprects, DR4,
+					rings, fence_in, fence_out);
+
+	switch (rings) {
+	case I915_EXEC_DEFAULT:
+	case I915_EXEC_RENDER:
+		return bo->bufmgr->bo_exec(bo, used,
+					   cliprects, num_cliprects, DR4,
+						fence_in, fence_out);
+	default:
+		return -ENODEV;
+	}
+}
+
+
+
 
 void drm_intel_bufmgr_set_debug(drm_intel_bufmgr *bufmgr, int enable_debug)
 {

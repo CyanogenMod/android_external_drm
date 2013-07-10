@@ -2308,7 +2308,7 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 static int
 do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
 	 drm_clip_rect_t *cliprects, int num_cliprects, int DR4,
-	 unsigned int flags)
+	 unsigned int flags, int fence_in, int *fence_out)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
 	struct drm_i915_gem_execbuffer2 execbuf;
@@ -2354,6 +2354,16 @@ do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
 	execbuf.DR1 = 0;
 	execbuf.DR4 = DR4;
 	execbuf.flags = flags;
+
+	if (fence_in >= 0) {
+		flags |= I915_EXEC_WAIT_FENCE;
+		execbuf.rsvd2 = fence_in;
+	}
+
+	if (fence_out != NULL) {
+		execbuf.flags |= I915_EXEC_REQUEST_FENCE;
+	}
+
 	if (bo->usesRS)
 	    execbuf.flags |= I915_EXEC_RS;
 
@@ -2383,6 +2393,10 @@ do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
 			    (unsigned int) bufmgr_gem->gtt_size);
 		}
 	}
+
+	if (fence_out != NULL)
+		*fence_out = (int)execbuf.rsvd2;
+
 	drm_intel_update_buffer_offsets2(bufmgr_gem);
 
 skip_execution:
@@ -2408,26 +2422,42 @@ skip_execution:
 static int
 drm_intel_gem_bo_exec2(drm_intel_bo *bo, int used,
 		       drm_clip_rect_t *cliprects, int num_cliprects,
-		       int DR4)
+		       int DR4, int fence_in, int *fence_out)
 {
 	return do_exec2(bo, used, NULL, cliprects, num_cliprects, DR4,
-			I915_EXEC_RENDER);
+			I915_EXEC_RENDER, fence_in, fence_out);
 }
 
 static int
 drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 			drm_clip_rect_t *cliprects, int num_cliprects, int DR4,
-			unsigned int flags)
+			unsigned int flags, int fence_in, int *fence_out)
 {
 	return do_exec2(bo, used, NULL, cliprects, num_cliprects, DR4,
-			flags);
+			flags, fence_in, fence_out);
 }
+
 
 int
 drm_intel_gem_bo_context_exec(drm_intel_bo *bo, drm_intel_context *ctx,
 			      int used, unsigned int flags)
 {
-	return do_exec2(bo, used, ctx, NULL, 0, 0, flags);
+	return do_exec2(bo, used, ctx, NULL, 0, 0, flags, -1, NULL);
+}
+
+
+int
+drm_intel_gem_bo_context_fence_exec(drm_intel_bo *bo, drm_intel_context *ctx,
+			      int used, unsigned int flags,
+				int fence_in, int *fence_out)
+{
+        if (fence_out)
+                *fence_out = -1;
+
+	if (fence_in >= 0)
+		do_fence_wait(fence_in);
+
+	return do_exec2(bo, used, ctx, NULL, 0, 0, flags, fence_in, fence_out);
 }
 
 static int
