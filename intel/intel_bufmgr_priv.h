@@ -284,6 +284,22 @@ struct _drm_intel_bufmgr {
 	/** Returns true if target_bo is in the relocation tree rooted at bo. */
 	int (*bo_references) (drm_intel_bo *bo, drm_intel_bo *target_bo);
 
+	/**
+	 * Sets an object's userdata
+	 *
+	 * \param bo Buffer whose userdata will be set
+	 * \param userdata Value of new userdata
+	 */
+	int (*bo_set_userdata) (drm_intel_bo *bo, uint32_t userdata);
+
+	/**
+	 * Gets an object's current userdata.
+	 *
+	 * \param bo Buffer from which userdata will be retrieved
+	 * \param userdata Pointer to uint32_t receiving userdata
+	 */
+	int (*bo_get_userdata) (drm_intel_bo *bo, uint32_t *userdata);
+
 	/**< Enables verbose debugging printouts */
 	int debug;
 };

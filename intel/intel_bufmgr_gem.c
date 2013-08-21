@@ -2542,6 +2542,50 @@ drm_intel_gem_bo_get_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 	return 0;
 }
 
+static int
+drm_intel_gem_bo_set_userdata(drm_intel_bo *bo, uint32_t userdata)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+ 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	struct drm_i915_gem_access_userdata access_userdata;
+	int ret;
+
+	access_userdata.handle = bo_gem->gem_handle;
+	access_userdata.userdata = userdata;
+	access_userdata.write = 1;
+
+	ret = ioctl(bufmgr_gem->fd,
+		    DRM_IOCTL_I915_GEM_ACCESS_USERDATA,
+		    &access_userdata);
+	if (ret == -1)
+		return -errno;
+
+	return 0;
+}
+
+static int
+drm_intel_gem_bo_get_userdata(drm_intel_bo *bo, uint32_t *userdata)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+ 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	struct drm_i915_gem_access_userdata access_userdata;
+	int ret;
+
+	access_userdata.handle = bo_gem->gem_handle;
+	access_userdata.userdata = 0;
+	access_userdata.write = 0;
+
+	ret = ioctl(bufmgr_gem->fd,
+		    DRM_IOCTL_I915_GEM_ACCESS_USERDATA,
+		    &access_userdata);
+	if (ret == -1)
+		return -errno;
+
+	*userdata = access_userdata.userdata;
+
+	return 0;
+}
+
 drm_intel_bo *
 drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int size)
 {
@@ -3424,6 +3468,8 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	bufmgr_gem->bufmgr.bo_unpin = drm_intel_gem_bo_unpin;
 	bufmgr_gem->bufmgr.bo_get_tiling = drm_intel_gem_bo_get_tiling;
 	bufmgr_gem->bufmgr.bo_set_tiling = drm_intel_gem_bo_set_tiling;
+	bufmgr_gem->bufmgr.bo_get_userdata = drm_intel_gem_bo_get_userdata;
+	bufmgr_gem->bufmgr.bo_set_userdata = drm_intel_gem_bo_set_userdata;
 	bufmgr_gem->bufmgr.bo_flink = drm_intel_gem_bo_flink;
 	bufmgr_gem->bufmgr.bo_prime = drm_intel_gem_bo_prime;
 	/* Use the new one if available */

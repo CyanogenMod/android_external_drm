@@ -154,6 +154,10 @@ int drm_intel_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 			    uint32_t stride);
 int drm_intel_bo_get_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 			    uint32_t * swizzle_mode);
+int drm_intel_bo_set_userdata(drm_intel_bo *bo, uint32_t userdata);
+int drm_intel_bo_get_userdata(drm_intel_bo *bo, uint32_t *userdata);
+int drm_intel_bo_set_datatype(drm_intel_bo *bo, uint32_t userdata);
+int drm_intel_bo_get_datatype(drm_intel_bo *bo, uint32_t *userdata);
 int drm_intel_bo_flink(drm_intel_bo *bo, uint32_t * name);
 int drm_intel_bo_prime(drm_intel_bo *bo, uint32_t * name);
 int drm_intel_bo_busy(drm_intel_bo *bo);
@@ -291,6 +295,8 @@ int drm_intel_get_reset_stats(drm_intel_context *ctx,
 #define dri_bo_unpin drm_intel_bo_unpin
 #define dri_bo_get_tiling drm_intel_bo_get_tiling
 #define dri_bo_set_tiling(bo, mode) drm_intel_bo_set_tiling(bo, mode, 0)
+#define dri_bo_get_userdata drm_intel_bo_get_userdata
+#define dri_bo_set_userdata drm_intel_bo_set_userdata
 #define dri_bo_flink drm_intel_bo_flink
 #define intel_bufmgr_gem_init drm_intel_bufmgr_gem_init
 #define intel_bo_gem_create_from_name drm_intel_bo_gem_create_from_name
