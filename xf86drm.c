@@ -2577,19 +2577,34 @@ int drmPrimeFDToHandle(int fd, int prime_fd, uint32_t *handle)
  */
 int drmCSCIoctl(int fd, struct CSCCoeff_Matrix *CSC_Matrix)
 {
-    int ret;
-    struct CSC_Coeff *CSCCoeff;
-    if ((CSC_Matrix == NULL) || (CSC_Matrix->CoeffMatrix == NULL)) {
+    int ret, devid, i, j;
+    struct csc_coeff *pCSCCoeff;
+    drm_i915_getparam_t gp;
+
+    if ((CSC_Matrix == NULL) || (CSC_Matrix->CoeffMatrix == NULL) ||
+		(CSC_Matrix->param_valid & CSC_PARAM_VALID_MASK) == 0) {
         printf("Invalid parameters, pass valid coeff matrix\n");
-        return -1;
+        return -EINVAL;
     }
 
-    CSCCoeff = (struct CSC_Coeff *)malloc(sizeof(struct CSC_Coeff));
-    calc_coeff(CSC_Matrix->CoeffMatrix, CSCCoeff->VLV_CSC_Coeff);
-    CSCCoeff->crtc_id = CSC_Matrix->crtc_id;
+    gp.param = I915_PARAM_CHIPSET_ID;
+    gp.value = &devid;
+
+    ret = drmIoctl(fd, DRM_IOCTL_I915_GETPARAM, &gp);
+    if (ret) {
+        fprintf(stderr, "drmCSCIoctl: get chip id failed: %d [%d]\n",
+                                                            ret, errno);
+        fprintf(stderr, "drmCSCIoctl: param: %d, val: %d\n",
+                                                    gp.param, *gp.value);
+	return ret;
+    }
+
+    pCSCCoeff = (struct csc_coeff *)malloc(sizeof(struct csc_coeff));
+    Calc_CSC_Param(CSC_Matrix, pCSCCoeff, devid);
+    pCSCCoeff->crtc_id = CSC_Matrix->crtc_id;
 
     do {
-        ret = ioctl(fd, DRM_IOCTL_I915_SET_CSC, CSCCoeff);
+        ret = ioctl(fd, DRM_IOCTL_I915_SET_CSC, pCSCCoeff);
     } while (ret == -1 && (errno == EINTR || errno == EAGAIN));
 
     return ret;

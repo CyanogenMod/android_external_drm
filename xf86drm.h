@@ -341,9 +341,28 @@ typedef struct _drmSetVersion {
 	int drm_dd_minor;
 } drmSetVersion, *drmSetVersionPtr;
 
+#define CSC_MAX_COEFF_COUNT	9
+#define CSC_MAX_COEFF_REG_COUNT	6
+#define CSC_MAX_OFFSET_COUNT	3
+
 struct CSCCoeff_Matrix {
         unsigned int crtc_id;
-        float CoeffMatrix[9];
+	/*
+	 * param_valid : Bits Explanation
+	 * XXX1b : Coeff Valid
+	 * XX1Xb : Offsets Valid
+	 * X1XXb : Mode Valid
+	 * X000b : Invalid
+	 */
+	unsigned int param_valid;
+        float CoeffMatrix[CSC_MAX_COEFF_COUNT];
+	float CSCPreoffset[CSC_MAX_OFFSET_COUNT];
+	float CSCPostoffset[CSC_MAX_OFFSET_COUNT];
+	/*
+	 * CSCMode = 1 for CSC is Before Gamma
+	 * CSCMode = 0 for CSC is After Gamma
+	 */
+	unsigned int CSCMode;
 };
 
 #define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)

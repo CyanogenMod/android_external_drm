@@ -73,21 +73,32 @@
 #define SPRITE_D	6
 
 #define MAX_CSC_COEFFICIENTS 9
+#define CSC_MAX_COEFF_REG_COUNT		6
+#define CSC_MAX_OFFSET_COUNT		3
+
+#define CSC_COEFF_VALID_MASK		0x1
+#define CSC_OFFSET_VALID_MASK		0x2
+#define CSC_MODE_VALID_MASK		0x4
+#define CSC_PARAM_VALID_MASK		0x7
+
 struct drm_intel_csc_params {
     float m_CSCCoeff[MAX_CSC_COEFFICIENTS];
 };
 
-union CSC_COEFFICIENT_WG {
-        unsigned int  Value;
-        struct {
-                unsigned int Coeff_2:16; /* bit 0-15 */
-                unsigned int Coeff_1:16; /* bits 16-32 */
-        };
-};
-
-struct CSC_Coeff {
-    unsigned int crtc_id;
-    union CSC_COEFFICIENT_WG VLV_CSC_Coeff[6];
+struct csc_coeff {
+	unsigned int crtc_id;
+	/*
+	 * param_valid : Bits Explanation
+	 * XXX1b : Coeff Valid
+	 * XX1Xb : Offset Valid
+	 * X1XXb : Mode Valid
+	 * X000b : Invalid
+	 */
+	unsigned int param_valid;
+	unsigned int csc_coeff[CSC_MAX_COEFF_REG_COUNT];
+	unsigned int csc_preoffset[CSC_MAX_OFFSET_COUNT];
+	unsigned int csc_postoffset[CSC_MAX_OFFSET_COUNT];
+	unsigned int csc_mode;
 };
 
 typedef struct _drm_i915_init {
@@ -308,7 +319,7 @@ typedef struct _drm_i915_sarea {
 			DRM_IOW(DRM_COMMAND_BASE + DRM_I915_RESERVED_REG_BIT_2,\
 			struct drm_i915_reserved_reg_bit_2)
 #define DRM_IOCTL_I915_SET_CSC  DRM_IOWR (DRM_COMMAND_BASE + DRM_I915_SET_CSC, \
-            struct CSC_Coeff)
+            struct csc_coeff)
 #define DRM_IOCTL_I915_GEM_ACCESS_USERDATA	\
 		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_ACCESS_USERDATA, \
 			struct drm_i915_gem_access_userdata)
