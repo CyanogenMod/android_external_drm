@@ -285,6 +285,21 @@ typedef struct _drm_i915_sarea {
 #define DRM_I915_GEM_ACCESS_USERDATA	0x3c
 #define DRM_I915_PERFMON		0x3e
 
+// ***
+// Temporary defines to satisfy unused function in hwc
+// This should be reverted as soon as possible
+#define DRM_I915_DISP_SCREEN_CONTROL   0x35
+#define DRM_IOCTL_I915_DISP_SCREEN_CONTROL                     \
+         DRM_IOW(DRM_COMMAND_BASE + DRM_I915_DISP_SCREEN_CONTROL, \
+         struct drm_i915_disp_screen_control)
+
+struct drm_i915_disp_screen_control {
+       __u32 on_off_cntrl;
+       __u32 crtc_id;
+};
+
+// ***
+
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
 #define DRM_IOCTL_I915_FLIP		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLIP)
