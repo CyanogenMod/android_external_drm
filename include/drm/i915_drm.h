@@ -28,6 +28,7 @@
 #define _I915_DRM_H_
 
 #include <drm.h>
+#include <i915_perfmon.h>
 
 /* Please note that modifications to all structs defined here are
  * subject to backwards-compatibility constraints.
@@ -265,6 +266,7 @@ typedef struct _drm_i915_sarea {
 #define DRM_I915_SET_CSC                0x39
 #define DRM_I915_DPST_CONTEXT		0x3b
 #define DRM_I915_GEM_ACCESS_USERDATA	0x3c
+#define DRM_I915_PERFMON		0x3e
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -327,6 +329,8 @@ typedef struct _drm_i915_sarea {
 #define DRM_IOCTL_I915_DPST_CONTEXT			\
 		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_DPST_CONTEXT, \
 		struct dpst_initialize_context)
+#define DRM_IOCTL_I915_PERFMON DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_PERFMON, \
+		struct drm_i915_perfmon)
 
 /* Allow drivers to submit batchbuffers directly to hardware, relying
  * on the security mechanisms provided by hardware.
