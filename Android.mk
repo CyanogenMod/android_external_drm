@@ -48,6 +48,7 @@ LOCAL_COPY_HEADERS :=            \
 	include/drm/drm_mode.h   \
 	include/drm/drm_sarea.h  \
 	include/drm/i915_drm.h   \
+	include/drm/i915_perfmon.h \
 	intel/intel_bufmgr.h     \
 
 LOCAL_COPY_HEADERS_TO := libdrm
