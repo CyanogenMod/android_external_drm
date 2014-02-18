@@ -239,7 +239,7 @@ static void Convert_Coeff_ToBinary(struct drm_intel_csc_params *csc_params,
             }
 
             *(Coeff_binary + count) =  twosCompliment;
-        } else if (IS_HASWELL(devid)) {
+        } else if (IS_HASWELL(devid) || IS_BROADWELL(devid)) {
 
             /* Clip to valid range [-2.999 to +2.999] */
             if (coeff > HSW_CSC_COEFF_MAX_RANGE)
@@ -308,7 +308,7 @@ static void Convert_Coeff_ToBSpecFormat(unsigned int *CSCCoeff,
 
     for(RegIndex = 0, CoeffIndex = 0; RegIndex < CSC_MAX_COEFF_REG_COUNT;
                                    RegIndex += 2, CoeffIndex += 3) {
-        if (IS_HASWELL(devid)) {
+        if (IS_HASWELL(devid) || IS_BROADWELL(devid)) {
             CSCCoeff[RegIndex] = (*(Coeff_binary + CoeffIndex) << 16 |
                                             *(Coeff_binary + (CoeffIndex + 1)));
             CSCCoeff[RegIndex+1] = *(Coeff_binary + (CoeffIndex + 2)) << 16;
@@ -333,7 +333,7 @@ int Calc_CSC_Param(struct CSCCoeff_Matrix *CSC_Matrix,
     Convert_Coeff_ToBSpecFormat(CSC_Coeff_t->csc_coeff,
 						Hsw_Vlv_CSC_Coeff, devid);
 
-    if (IS_HASWELL(devid)) {
+    if (IS_HASWELL(devid) || IS_BROADWELL(devid)) {
         if (CSC_Matrix->param_valid & CSC_OFFSET_VALID_MASK)
             Convert_CSC_Offset_ToBSpecFormat(CSC_Matrix, CSC_Coeff_t);
 
