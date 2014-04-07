@@ -216,6 +216,22 @@ typedef struct _drm_i915_sarea {
 
 } drm_i915_sarea_t;
 
+struct i915_ext_ioctl_data
+{
+        __u32 sub_cmd;	/* Extended ioctl to call */
+        __u8  table;	/* Reserved, must be zero */
+	__u8  pad1; 	/* Alignment pad */
+	__u16 pad2; 	/* Alignment pad */
+
+	/*
+	 * Kernel-space pointer could be 32-bits or 64-bits
+	 * so use u64 to guarantee compatibility with 64-bit kernels
+	 * This obviates the need to provide both a compat_ioctl and standard
+	 * ioctl for this interface
+	*/
+        __u64 args_ptr;
+};
+
 /* due to userspace building against these headers we need some compat here */
 #define planeA_x pipeA_x
 #define planeA_y pipeA_y
@@ -309,6 +325,15 @@ struct drm_i915_disp_screen_control {
        __u32 crtc_id;
 };
 
+/*
+ * Special, two-level, extended ioctl
+ * Please do not call this ioctl directly
+ * Always define, and call, a drm interface function
+ * The interface function should in turn call i915ExtIoctl() to invoke
+ * the ioctl.
+ */
+#define DRM_I915_EXT_IOCTL              0x5F
+
 // ***
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
@@ -384,6 +409,10 @@ struct drm_i915_disp_screen_control {
 #define DRM_IOCTL_I915_CMD_PARSER_APPEND	\
 		DRM_IOW (DRM_COMMAND_BASE + DRM_I915_CMD_PARSER_APPEND, \
 		struct drm_i915_cmd_parser_append)
+
+#define DRM_IOCTL_I915_EXT_IOCTL        \
+		DRM_IOW(DRM_COMMAND_BASE + DRM_I915_EXT_IOCTL, \
+		struct i915_ext_ioctl_data)
 
 /* Allow drivers to submit batchbuffers directly to hardware, relying
  * on the security mechanisms provided by hardware.

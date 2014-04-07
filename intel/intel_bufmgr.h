@@ -296,6 +296,12 @@ int drm_intel_cmd_parser_append(int fd,
 				uint32_t *regs,
 				uint32_t reg_count);
 
+/*
+ * Interface to extended ioctl's
+ * This should be used instead of calling the ioctl directly
+ */
+int i915ExtIoctl(int fd, unsigned long request, void *arg);
+
 /** @{ Compatibility defines to keep old code building despite the symbol rename
  * from dri_* to drm_intel_*
  */
