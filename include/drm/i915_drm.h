@@ -1181,7 +1181,8 @@ struct drm_i915_set_plane_zorder {
 };
 
 struct drm_i915_plane_180_rotation {
-	__u32 crtc_id;
+	__u32 obj_id;
+	__u32 obj_type;
 	__u32 rotate;
 };
 
