@@ -131,32 +131,68 @@ void drm_intel_bufmgr_destroy(drm_intel_bufmgr *bufmgr)
 
 
 int
-do_fence_wait(int fd)
+do_fence_wait(int fd, uint64_t flags)
 {
 	/* Temporary solution waits in userland */
 	int rc = -ENOENT;
 	struct sync_fence_info_data *info;
+	unsigned int same_ring = 0;
+	struct sync_pt_info *pt_info = NULL;
+	struct drm_i915_gem_syncpt_driver_data *data;
+	static const char driver_name[] = "i915_syn";
+	static const uint64_t *driver_name_check = (uint64_t *)driver_name;
+	uint64_t *driver_name_pt;
 
-	if (fd >= 0) {
-                /* KMD doesn't currently support this so
-                * wait on the fence here instead. This
-                * is a blocking wait so it is not friendly
-                * to the caller...
-                */
-                sync_wait(fd, -1);
+	if (fd < 0)
+		return rc;
 
-                info = sync_fence_info(fd);
-
-                if (info->status != 1) {
-                        rc = -ETIMEDOUT;
-		} else
-			rc = 0;
-
-                sync_fence_info_free(info);
-
-		/* Ownership is transferred so close it */
-		close(fd);
+	/* Optimisation: Avoiding waiting on fences on same ring. */
+	flags &= I915_EXEC_RING_MASK;
+	info = sync_fence_info(fd);
+	if (info) {
+		same_ring = 1;
+		while ((pt_info = sync_pt_info(info, pt_info))) {
+			data = (struct drm_i915_gem_syncpt_driver_data *)
+					&pt_info->driver_data;
+			driver_name_pt = (uint64_t *)&pt_info->driver_name[0];
+			if (*driver_name_pt != *driver_name_check
+			     || flags != (data->flags & I915_EXEC_RING_MASK)) {
+				same_ring = 0;
+				break;
+			}
+		}
+		sync_fence_info_free(info);
 	}
+
+	/* KMD doesn't currently support this so
+	 * wait on the fence here instead. This
+	 * is a blocking wait so it is not friendly
+	 * to the caller...
+	 */
+	if (same_ring) {
+		rc = 0;
+	} else {
+		sync_wait(fd, -1);
+
+		info = sync_fence_info(fd);
+		if (!info) {
+			/* EIO if an arbitrary choice for the error code.
+			 * The called function either fails due to ENOMEM
+			 * or error return from an ioctl.
+			 */
+			rc = -EIO;
+		} else {
+			if (info->status != 1) {
+				rc = -ETIMEDOUT;
+			} else
+				rc = 0;
+
+			sync_fence_info_free(info);
+		}
+	}
+
+	/* Ownership is transferred so close it */
+	close(fd);
 
 	return rc;
 }
@@ -179,7 +215,7 @@ drm_intel_bo_fence_exec(drm_intel_bo *bo, int used,
 	/* Temporary measure: KMD cannot support fence_in so block on
 	* it here instead */
 	if (fence_in >= 0)
-		do_fence_wait(fence_in);
+		do_fence_wait(fence_in, I915_EXEC_RENDER);
 
 	return bo->bufmgr->bo_exec(bo, used, cliprects, num_cliprects, DR4,
 				fence_in, fence_out);
@@ -217,7 +253,7 @@ drm_intel_bo_mrb_fence_exec(drm_intel_bo *bo, int used,
 	/* Temporary measure: KMD cannot support fence_in so block on
 	* it here instead */
 	if (fence_in >= 0)
-		do_fence_wait(fence_in);
+		do_fence_wait(fence_in, rings);
 
 	if (bo->bufmgr->bo_mrb_exec)
 		return bo->bufmgr->bo_mrb_exec(bo, used,

@@ -2485,7 +2485,7 @@ drm_intel_gem_bo_context_fence_exec(drm_intel_bo *bo, drm_intel_context *ctx,
                 *fence_out = -1;
 
 	if (fence_in >= 0)
-		do_fence_wait(fence_in);
+		do_fence_wait(fence_in, flags);
 
 	return do_exec2(bo, used, ctx, NULL, 0, 0, flags, fence_in, fence_out);
 }
