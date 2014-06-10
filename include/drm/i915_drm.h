@@ -276,6 +276,7 @@ typedef struct _drm_i915_sarea {
 #define DRM_I915_GET_RESET_STATS	0x32
 #define DRM_I915_GEM_USERPTR		0x33
 #define DRM_I915_SET_PLANE_ZORDER 	0x34
+#define DRM_I915_SET_PLANE_180_ROTATION 0x36
 #define DRM_I915_RESERVED_REG_BIT_2	0x37
 #define DRM_I915_SET_CSC                0x39
 #define DRM_I915_DPST_CONTEXT		0x3b
@@ -348,6 +349,9 @@ typedef struct _drm_i915_sarea {
 #define DRM_IOCTL_I915_SET_PLANE_ZORDER		\
 	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_SET_PLANE_ZORDER, \
 	struct drm_i915_set_plane_zorder)
+#define DRM_IOCTL_I915_SET_PLANE_180_ROTATION  \
+	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_SET_PLANE_180_ROTATION, \
+	struct drm_i915_plane_180_rotation)
 
 /* Allow drivers to submit batchbuffers directly to hardware, relying
  * on the security mechanisms provided by hardware.
@@ -1172,6 +1176,11 @@ struct drm_i915_gem_userptr {
 
 struct drm_i915_set_plane_zorder {
 	 __u32 order;
+};
+
+struct drm_i915_plane_180_rotation {
+	__u32 crtc_id;
+	__u32 rotate;
 };
 
 struct drm_i915_reserved_reg_bit_2 {
