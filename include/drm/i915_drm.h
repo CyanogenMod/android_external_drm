@@ -102,6 +102,19 @@ struct csc_coeff {
 	unsigned int csc_mode;
 };
 
+#define PASASBCA	0
+#define PASBSACA	8
+#define SBPASACA        1
+#define SBSAPACA        9
+#define SAPASBCA        4
+#define SASBPACA        6
+#define PBSCSDCB        (1 << 31) | 0
+#define PBSDSCCB        (1 << 31) | 8
+#define SDPBSCCB        (1 << 31) | 1
+#define SDSCPBCB        (1 << 31) | 9
+#define SCPBSDCB        (1 << 31) | 4
+#define SCSDPBCB        (1 << 31) | 6
+
 typedef struct _drm_i915_init {
 	enum {
 		I915_INIT_DMA = 0x01,
@@ -262,6 +275,7 @@ typedef struct _drm_i915_sarea {
 #define DRM_I915_REG_READ		0x31
 #define DRM_I915_GET_RESET_STATS	0x32
 #define DRM_I915_GEM_USERPTR		0x33
+#define DRM_I915_SET_PLANE_ZORDER 	0x34
 #define DRM_I915_RESERVED_REG_BIT_2	0x37
 #define DRM_I915_SET_CSC                0x39
 #define DRM_I915_DPST_CONTEXT		0x3b
@@ -331,6 +345,9 @@ typedef struct _drm_i915_sarea {
 		struct dpst_initialize_context)
 #define DRM_IOCTL_I915_PERFMON DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_PERFMON, \
 		struct drm_i915_perfmon)
+#define DRM_IOCTL_I915_SET_PLANE_ZORDER		\
+	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_SET_PLANE_ZORDER, \
+	struct drm_i915_set_plane_zorder)
 
 /* Allow drivers to submit batchbuffers directly to hardware, relying
  * on the security mechanisms provided by hardware.
@@ -1151,6 +1168,10 @@ struct drm_i915_gem_userptr {
 	* Object handles are nonzero.
 	*/
 	__u32 handle;
+};
+
+struct drm_i915_set_plane_zorder {
+	 __u32 order;
 };
 
 struct drm_i915_reserved_reg_bit_2 {
