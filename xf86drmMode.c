@@ -909,7 +909,7 @@ int drmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
 		    int32_t crtc_x, int32_t crtc_y,
 		    uint32_t crtc_w, uint32_t crtc_h,
 		    uint32_t src_x, uint32_t src_y,
-		    uint32_t src_w, uint32_t src_h)
+		    uint32_t src_w, uint32_t src_h, void *user_data)
 
 {
 	struct drm_mode_set_plane s;
@@ -926,6 +926,7 @@ int drmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
 	s.src_y = src_y;
 	s.src_w = src_w;
 	s.src_h = src_h;
+	s.user_data = user_data;
 
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_SETPLANE, &s);
 }

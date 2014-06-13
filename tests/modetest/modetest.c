@@ -1014,7 +1014,7 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 	/* note src coords (last 4 args) are in Q16 format */
 	if (drmModeSetPlane(dev->fd, plane_id, crtc->crtc->crtc_id, p->fb_id,
 			    plane_flags, crtc_x, crtc_y, crtc_w, crtc_h,
-			    0, 0, p->w << 16, p->h << 16)) {
+			    0, 0, p->w << 16, p->h << 16), NULL) {
 		fprintf(stderr, "failed to enable plane: %s\n",
 			strerror(errno));
 		return -1;

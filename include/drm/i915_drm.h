@@ -115,6 +115,8 @@ struct csc_coeff {
 #define SCPBSDCB        (1 << 31) | 4
 #define SCSDPBCB        (1 << 31) | 6
 
+#define DRM_PRIMARY_DISABLE 1
+
 typedef struct _drm_i915_init {
 	enum {
 		I915_INIT_DMA = 0x01,
