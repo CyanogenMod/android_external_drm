@@ -40,7 +40,12 @@
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
 #include "xf86drm.h"
+#include <unistd.h>
+#ifdef ANDROID
+#include <sync/sync.h>
+#else
 #include <linux/sync.h>
+#endif
 
 /** @file intel_bufmgr.c
  *
