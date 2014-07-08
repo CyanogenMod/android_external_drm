@@ -805,7 +805,6 @@ struct drm_i915_gem_execbuffer2 {
 #define I915_EXEC_BSD                    (2<<0)
 #define I915_EXEC_BLT                    (3<<0)
 #define I915_EXEC_VEBOX                  (4<<0)
-#define I915_EXEC_RS                     (8<<0)
 
 /* Used for switching the constants addressing mode on gen4+ RENDER ring.
  * Gen6+ only supports relative addressing to dynamic state (default) and
@@ -862,7 +861,12 @@ struct drm_i915_gem_execbuffer2 {
 /** Flag to request Watchdog timer support for a batch buffer */
 #define I915_EXEC_ENABLE_WATCHDOG	(1<<15)
 
-#define __I915_EXEC_UNKNOWN_FLAGS -(I915_EXEC_ENABLE_WATCHDOG<<1)
+/** Tell the kernel that the batchbuffer is processed by
+ *  the resource streamer.
+ */
+#define I915_EXEC_RESOURCE_STREAMER	(1<<16)
+
+#define __I915_EXEC_UNKNOWN_FLAGS -(I915_EXEC_RESOURCE_STREAMER<<1)
 
 #define I915_EXEC_CONTEXT_ID_MASK	(0xffffffff)
 #define i915_execbuffer2_set_context_id(eb2, context) \

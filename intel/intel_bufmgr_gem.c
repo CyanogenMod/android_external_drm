@@ -2501,7 +2501,7 @@ do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
 	}
 
 	if (bo->usesRS)
-	    execbuf.flags |= I915_EXEC_RS;
+	    execbuf.flags |= I915_EXEC_RESOURCE_STREAMER;
 
 	if (ctx == NULL)
 		i915_execbuffer2_set_context_id(execbuf, 0);
