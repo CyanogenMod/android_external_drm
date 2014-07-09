@@ -308,6 +308,7 @@ typedef struct _drm_i915_sarea {
 #define DRM_IOCTL_I915_GEM_PIN		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_PIN, struct drm_i915_gem_pin)
 #define DRM_IOCTL_I915_GEM_UNPIN	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_UNPIN, struct drm_i915_gem_unpin)
 #define DRM_IOCTL_I915_GEM_BUSY		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_BUSY, struct drm_i915_gem_busy)
+
 #define DRM_IOCTL_I915_GEM_SET_CACHING		DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_SET_CACHING, struct drm_i915_gem_caching)
 #define DRM_IOCTL_I915_GEM_GET_CACHING		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_GET_CACHING, struct drm_i915_gem_caching)
 #define DRM_IOCTL_I915_GEM_THROTTLE	DRM_IO ( DRM_COMMAND_BASE + DRM_I915_GEM_THROTTLE)
@@ -914,6 +915,31 @@ struct drm_i915_gem_caching {
 	 * values). bits16-31 are reserved for platform-specific variations
 	 * (e.g. l3$ caching on gen7). */
 	__u32 caching;
+};
+
+/*
+   Temporary defines to keep userland code building until we
+   can update it for the official naming
+ */
+#define DRM_I915_GEM_SET_CACHEING	DRM_I915_GEM_SET_CACHING
+#define DRM_I915_GEM_GET_CACHEING	DRM_I915_GEM_GET_CACHING
+#define DRM_IOCTL_I915_GEM_SET_CACHEING	DRM_IOCTL_I915_GEM_SET_CACHING
+#define DRM_IOCTL_I915_GEM_GET_CACHEING	DRM_IOCTL_I915_GEM_GET_CACHING
+#define I915_CACHEING_NONE		I915_CACHING_NONE
+#define I915_CACHEING_CACHED		I915_CACHING_CACHED
+#define I915_CACHEING_DISPLAY		I915_CACHING_DISPLAY
+struct drm_i915_gem_cacheing {
+        /**
+         * Handle of the buffer to set/get the caching level of. */
+        __u32 handle;
+
+        /**
+         * Cacheing level to apply or return value
+         *
+         * bits0-15 are for generic caching control (i.e. the above defined
+         * values). bits16-31 are reserved for platform-specific variations
+         * (e.g. l3$ caching on gen7). */
+        __u32 cacheing;
 };
 
 #define I915_TILING_NONE	0
