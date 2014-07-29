@@ -2401,22 +2401,7 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 	execbuf.cliprects_ptr = (uintptr_t) cliprects;
 	execbuf.num_cliprects = num_cliprects;
 	execbuf.DR1 = 0;
-
-	/*
-	  FIXME: This works around an issue in the media driver.
-		 All callers of execbuffer are now required to 0 unused
-		 arguments. The kernel now checks that DR1, DR4 and 
-		 cliprects_ptr are all 0 if num_cliprects is 0 and errors
-		 if they are not.
-		 However, currently, the media driver is not zeroing DR4
-		 despite not supplying any cliprects.
-		 Note that we cannot leave this here as a permanent fix
-		 because it is expected that the execbuffer interface may
-		 allow these fields to be reused for other purposes in the
-		 future, so we should really allow them to pass through
-		 normally, and fix this in the media driver instead.
-	*/
-	execbuf.DR4 = cliprects ? DR4 : 0;
+	execbuf.DR4 = DR4;
 
 	ret = drmIoctl(bufmgr_gem->fd,
 		       DRM_IOCTL_I915_GEM_EXECBUFFER,
@@ -2503,22 +2488,7 @@ do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
 	execbuf.cliprects_ptr = (uintptr_t)cliprects;
 	execbuf.num_cliprects = num_cliprects;
 	execbuf.DR1 = 0;
-
-	/*
-	  FIXME: This works around an issue in the media driver.
-		 All callers of execbuffer are now required to 0 unused
-		 arguments. The kernel now checks that DR1, DR4 and 
-		 cliprects_ptr are all 0 if num_cliprects is 0 and errors
-		 if they are not.
-		 However, currently, the media driver is not zeroing DR4
-		 despite not supplying any cliprects.
-		 Note that we cannot leave this here as a permanent fix
-		 because it is expected that the execbuffer interface may
-		 allow these fields to be reused for other purposes in the
-		 future, so we should really allow them to pass through
-		 normally, and fix this in the media driver instead.
-	*/
-	execbuf.DR4 = cliprects ? DR4 : 0;
+	execbuf.DR4 = DR4;
 	execbuf.flags = flags;
 
 	if (fence_in >= 0) {
