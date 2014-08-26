@@ -43,6 +43,7 @@ struct drm_clip_rect;
 typedef struct _drm_intel_bufmgr drm_intel_bufmgr;
 typedef struct _drm_intel_context drm_intel_context;
 typedef struct _drm_intel_bo drm_intel_bo;
+typedef struct drm_i915_cmd_descriptor cmd_descriptor;
 
 struct _drm_intel_bo {
 	/**
@@ -284,6 +285,13 @@ int drm_intel_get_reset_stats(drm_intel_context *ctx,
 			      uint32_t *pending);
 
 int do_fence_wait(int fd, uint64_t flags);
+
+int drm_intel_cmd_parser_append(int fd,
+				uint32_t ring,
+				uint32_t cmd_count,
+				cmd_descriptor *cmds,
+				uint32_t *regs,
+				uint32_t reg_count);
 
 /** @{ Compatibility defines to keep old code building despite the symbol rename
  * from dri_* to drm_intel_*
