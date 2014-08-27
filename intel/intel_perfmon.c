@@ -28,6 +28,8 @@
 #include "i915_perfmon.h"
 #include <xf86drm.h>
 
+#include "intel_bufmgr.h"
+#include "intel_bufmgr_priv.h"
 #include "intel_perfmon.h"
 
 int
@@ -66,3 +68,144 @@ drm_intel_perfmon_set_irq(int fd, unsigned int enable)
 	return ret;
 }
 
+int
+drm_intel_perfmon_cancel_wait_irq(int fd)
+{
+	struct drm_i915_perfmon perfmon;
+	int ret;
+
+	perfmon.op = I915_PERFMON_CANCEL_WAIT_BUFFER_IRQS;
+	ret = drmIoctl(fd, DRM_IOCTL_I915_PERFMON, &perfmon);
+
+	return ret;
+}
+
+int
+drm_intel_perfmon_enable_config(int fd, int enable)
+{
+	struct drm_i915_perfmon perfmon;
+	int ret;
+
+	perfmon.op = enable ?
+			I915_PERFMON_ENABLE_CONFIG :
+			I915_PERFMON_DISABLE_CONFIG;
+	ret = drmIoctl(fd, DRM_IOCTL_I915_PERFMON, &perfmon);
+
+	return ret;
+}
+
+int
+drm_intel_perfmon_open(int fd)
+{
+	struct drm_i915_perfmon perfmon;
+	int ret;
+
+	perfmon.op = I915_PERFMON_OPEN;
+	ret = drmIoctl(fd, DRM_IOCTL_I915_PERFMON, &perfmon);
+
+	return ret;
+}
+
+int
+drm_intel_perfmon_close(int fd)
+{
+	struct drm_i915_perfmon perfmon;
+	int ret;
+
+	perfmon.op = I915_PERFMON_CLOSE;
+	ret = drmIoctl(fd, DRM_IOCTL_I915_PERFMON, &perfmon);
+
+	return ret;
+}
+
+int
+drm_intel_perfmon_set_config(
+	int fd,
+	enum DRM_I915_PERFMON_CONFIG_TARGET target,
+	unsigned int pid,
+	struct drm_i915_perfmon_config_entry *oa_entries,
+	unsigned int num_oa_entries,
+	unsigned int oa_id,
+	struct drm_i915_perfmon_config_entry *gp_entries,
+	unsigned int num_gp_entries,
+	unsigned int gp_id)
+{
+	struct drm_i915_perfmon perfmon_ioctl;
+	int ret;
+
+	perfmon_ioctl.op = I915_PERFMON_SET_CONFIG;
+	perfmon_ioctl.data.set_config.target = target;
+	perfmon_ioctl.data.set_config.pid = pid;
+	perfmon_ioctl.data.set_config.oa.entries = (uintptr_t)oa_entries;
+	perfmon_ioctl.data.set_config.oa.size	= num_oa_entries;
+	perfmon_ioctl.data.set_config.oa.id	  = oa_id;
+	perfmon_ioctl.data.set_config.gp.entries = (uintptr_t)gp_entries;
+	perfmon_ioctl.data.set_config.gp.size	= num_gp_entries;
+	perfmon_ioctl.data.set_config.gp.id	  = gp_id;
+
+	ret = drmIoctl(fd, DRM_IOCTL_I915_PERFMON, &perfmon_ioctl);
+
+	return ret;
+}
+
+int
+drm_intel_perfmon_load_config(
+	int fd,
+	drm_intel_context *ctx,
+	uint32_t *oa_cfg_id,
+	uint32_t *gp_cfg_id)
+{
+	struct drm_i915_perfmon perfmon;
+	int ret;
+
+	perfmon.op = I915_PERFMON_LOAD_CONFIG;
+	perfmon.data.load_config.ctx_id = ctx ? ctx->ctx_id : 0;
+	perfmon.data.load_config.oa_id = *oa_cfg_id;
+	perfmon.data.load_config.gp_id = *gp_cfg_id;
+	ret = drmIoctl(fd, DRM_IOCTL_I915_PERFMON, &perfmon);
+
+	*oa_cfg_id = perfmon.data.load_config.oa_id;
+	*gp_cfg_id = perfmon.data.load_config.gp_id;
+
+	return ret;
+}
+
+
+int
+drm_intel_perfmon_get_hw_ctx_id(
+	int fd,
+	drm_intel_context *ctx,
+	unsigned int *hw_ctx_id)
+{
+	struct drm_i915_perfmon perfmon;
+	int ret;
+
+	perfmon.op = I915_PERFMON_GET_HW_CTX_ID;
+	perfmon.data.get_hw_ctx_id.ctx_id = ctx ? ctx->ctx_id : 0;
+	ret = drmIoctl(fd, DRM_IOCTL_I915_PERFMON, &perfmon);
+
+	*hw_ctx_id = perfmon.data.get_hw_ctx_id.hw_ctx_id;
+	return ret;
+}
+
+int
+drm_intel_perfmon_get_hw_ctx_ids(
+	int fd,
+	int pid,
+	unsigned int *hw_ctx_ids,
+	unsigned int *hw_ctx_ids_count)
+{
+	struct drm_i915_perfmon perfmon;
+	int ret;
+
+	perfmon.op = I915_PERFMON_GET_HW_CTX_IDS;
+	perfmon.data.get_hw_ctx_ids.pid = pid;
+	perfmon.data.get_hw_ctx_ids.count = *hw_ctx_ids_count;
+	perfmon.data.get_hw_ctx_ids.ids = (uintptr_t)hw_ctx_ids;
+
+	ret = drmIoctl(fd, DRM_IOCTL_I915_PERFMON, &perfmon);
+	*hw_ctx_ids_count = perfmon.data.get_hw_ctx_ids.count;
+
+	return ret;
+
+}

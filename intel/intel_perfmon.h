@@ -31,11 +31,40 @@
 #ifndef INTEL_PERFMON_H
 #define INTEL_PERFMON_H
 
+#define DRM_INTEL_PERFMON_VERSION 2
+
 struct drm_i915_perfmon_wait_irqs;
 
 int drm_intel_perfmon_wait_irq(int fd, struct drm_i915_perfmon_wait_irqs *wait_irqs);
 
 int drm_intel_perfmon_set_irq(int fd, unsigned int enable);
 
-#endif /* INTEL_PERFMON_H */
+int drm_intel_perfmon_cancel_wait_irq(int fd);
 
+int drm_intel_perfmon_open(int fd);
+
+int drm_intel_perfmon_close(int fd);
+
+int drm_intel_perfmon_enable_config(int fd, int enable);
+
+int drm_intel_perfmon_set_config(int fd,
+	enum DRM_I915_PERFMON_CONFIG_TARGET target,
+	unsigned int pid,
+	struct drm_i915_perfmon_config_entry *oa_entries,
+	unsigned int num_oa_entries,
+	unsigned int oa_id,
+	struct drm_i915_perfmon_config_entry *gp_entries,
+	unsigned int num_gp_entries,
+	unsigned int gp_id);
+
+int drm_intel_perfmon_load_config(int fd, drm_intel_context *ctx,
+				  uint32_t *oa_cfg_id,
+				  uint32_t *gp_cfg_id);
+
+int drm_intel_perfmon_get_hw_ctx_id(int fd, drm_intel_context *ctx,
+				    unsigned int *hw_ctx_id);
+
+int drm_intel_perfmon_get_hw_ctx_ids(int fd, int pid, unsigned int *hw_ctx_ids,
+				     unsigned int *hw_ctx_ids_count);
+
+#endif /* INTEL_PERFMON_H */
