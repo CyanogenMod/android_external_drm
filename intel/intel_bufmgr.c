@@ -496,3 +496,24 @@ int drm_intel_get_aperture_sizes(int fd,
 	*total = aperture.aper_size;
 	return 0;
 }
+
+int drm_intel_cmd_parser_append(int fd,
+				uint32_t ring,
+				uint32_t cmd_count,
+				cmd_descriptor *cmds,
+				uint32_t *regs,
+				uint32_t reg_count)
+{
+	int ret;
+	struct drm_i915_cmd_parser_append append;
+
+	append.ring = ring;
+	append.cmd_count = cmd_count;
+	append.cmds = (uintptr_t)cmds;
+	append.regs = (uintptr_t)regs;
+	append.reg_count = reg_count;
+
+	ret = drmIoctl(fd, DRM_IOCTL_I915_CMD_PARSER_APPEND, &append);
+
+	return ret;
+}
