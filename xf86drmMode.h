@@ -122,6 +122,12 @@ extern "C" {
 /* Dithering mode options */
 #define DRM_MODE_DITHERING_OFF  0
 #define DRM_MODE_DITHERING_ON   1
+#define DRM_MODE_DITHERING_AUTO 2
+
+/* Dirty info options */
+#define DRM_MODE_DIRTY_OFF      0
+#define DRM_MODE_DIRTY_ON       1
+#define DRM_MODE_DIRTY_ANNOTATE 2
 
 #define DRM_MODE_ENCODER_NONE   0
 #define DRM_MODE_ENCODER_DAC    1
@@ -130,6 +136,7 @@ extern "C" {
 #define DRM_MODE_ENCODER_TVDAC  4
 #define DRM_MODE_ENCODER_VIRTUAL 5
 #define DRM_MODE_ENCODER_DSI	6
+#define DRM_MODE_ENCODER_DPMST	7
 
 #define DRM_MODE_SUBCONNECTOR_Automatic 0
 #define DRM_MODE_SUBCONNECTOR_Unknown   0
@@ -163,9 +170,26 @@ extern "C" {
 #define DRM_MODE_PROP_IMMUTABLE (1<<2)
 #define DRM_MODE_PROP_ENUM      (1<<3) /* enumerated type with text strings */
 #define DRM_MODE_PROP_BLOB      (1<<4)
+#define DRM_MODE_PROP_BITMASK	(1<<5) /* bitmask of enumerated types */
+
+/* non-extended types: legacy bitmask, one bit per type: */
+#define DRM_MODE_PROP_LEGACY_TYPE  ( \
+		DRM_MODE_PROP_RANGE | \
+		DRM_MODE_PROP_ENUM | \
+		DRM_MODE_PROP_BLOB | \
+		DRM_MODE_PROP_BITMASK)
+
+/* extended-types: rather than continue to consume a bit per type,
+ * grab a chunk of the bits to use as integer type id.
+ */
+#define DRM_MODE_PROP_EXTENDED_TYPE	0x0000ffc0
+#define DRM_MODE_PROP_TYPE(n)		((n) << 6)
+#define DRM_MODE_PROP_OBJECT		DRM_MODE_PROP_TYPE(1)
+#define DRM_MODE_PROP_SIGNED_RANGE	DRM_MODE_PROP_TYPE(2)
 
 #define DRM_MODE_CURSOR_BO      (1<<0)
 #define DRM_MODE_CURSOR_MOVE    (1<<1)
+#define DRM_MODE_CURSOR_FLAGS	0x03
 
 #endif /* _DRM_MODE_H */
 
