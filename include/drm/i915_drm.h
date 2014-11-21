@@ -115,6 +115,14 @@ struct csc_coeff {
 #define SCPBSDCB        (1 << 31) | 4
 #define SCSDPBCB        (1 << 31) | 6
 
+/* Panel fitter scaling modes */
+#define DRM_PFIT_OFF     0
+#define DRM_AUTOSCALE    1
+#define DRM_PILLARBOX    2
+#define DRM_LETTERBOX    3
+
+#define DRM_PFIT_PROP "pfit"
+#define DRM_SCALING_SRC_SIZE_PROP "scaling_src_size"
 #define DRM_PRIMARY_DISABLE 1
 
 typedef struct _drm_i915_init {
@@ -439,6 +447,7 @@ typedef struct drm_i915_irq_wait {
 #define I915_PARAM_HAS_EXEC_HANDLE_LUT   26
 #define I915_PARAM_HAS_WT     	 	 27
 #define I915_PARAM_CMD_PARSER_VERSION	 28
+#define I915_PARAM_EU_COUNT              30
 
 /* Private (not upstreamed) parameters start from 96      */
 /* This helps to avoid conflicts with new upstream values */
