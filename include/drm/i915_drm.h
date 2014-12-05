@@ -124,6 +124,7 @@ struct csc_coeff {
 #define DRM_PFIT_PROP "pfit"
 #define DRM_SCALING_SRC_SIZE_PROP "scaling_src_size"
 #define DRM_PRIMARY_DISABLE 1
+#define DRM_ZORDER_WITH_ID  1
 
 typedef struct _drm_i915_init {
 	enum {
@@ -1238,7 +1239,8 @@ struct drm_i915_gem_userptr {
 };
 
 struct drm_i915_set_plane_zorder {
-	 __u32 order;
+	__u32 obj_id;
+	__u32 order;
 };
 
 struct drm_i915_plane_180_rotation {
