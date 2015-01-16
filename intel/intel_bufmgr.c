@@ -409,6 +409,50 @@ int drm_intel_bo_get_datatype(drm_intel_bo *bo, uint32_t *userdata)
 	return 0;
 }
 
+int drm_intel_bo_create_userdata_blk(drm_intel_bo *bo,
+				     uint16_t      flags,
+				     uint32_t      bytes,
+				     const void   *data,
+				     uint32_t     *avail_bytes)
+{
+	if (bo->bufmgr->bo_create_userdata_blk)
+		return bo->bufmgr->bo_create_userdata_blk(bo, flags, 
+							  bytes, data,
+							  avail_bytes);
+
+	return -ENODEV;
+}
+
+
+int drm_intel_bo_set_userdata_blk(drm_intel_bo *bo,
+				  uint32_t      offset,
+				  uint32_t      bytes,
+				  const void   *data,
+				  uint32_t     *avail_bytes)
+{
+	if (bo->bufmgr->bo_set_userdata_blk)
+		return bo->bufmgr->bo_set_userdata_blk(bo, offset,
+						       bytes, data,
+						       avail_bytes);
+
+	return -ENODEV;
+}
+
+int drm_intel_bo_get_userdata_blk(drm_intel_bo *bo,
+				  uint32_t      offset,
+				  uint32_t      bytes,
+				  void         *data,
+				  uint32_t     *avail_bytes)
+{
+	if (bo->bufmgr->bo_get_userdata_blk)
+		return bo->bufmgr->bo_get_userdata_blk(bo, offset,
+						       bytes, data,
+						       avail_bytes);
+
+	return -ENODEV;
+}
+
+
 int drm_intel_bo_disable_reuse(drm_intel_bo *bo)
 {
 	if (bo->bufmgr->bo_disable_reuse)
