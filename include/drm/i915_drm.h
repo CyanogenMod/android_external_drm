@@ -29,6 +29,7 @@
 
 #include <drm.h>
 #include <i915_perfmon.h>
+#include <i915_dpst.h>
 
 /* Please note that modifications to all structs defined here are
  * subject to backwards-compatibility constraints.
@@ -449,6 +450,7 @@ typedef struct drm_i915_irq_wait {
 #define I915_PARAM_HAS_WT     	 	 27
 #define I915_PARAM_CMD_PARSER_VERSION	 28
 #define I915_PARAM_EU_COUNT              30
+#define I915_PARAM_MMAP_VERSION		 31
 
 /* Private (not upstreamed) parameters start from 96      */
 /* This helps to avoid conflicts with new upstream values */
@@ -601,6 +603,14 @@ struct drm_i915_gem_mmap {
 	 * This is a fixed-size type for 32/64 compatibility.
 	 */
 	__u64 addr_ptr;
+
+	/**
+	 * Flags for extended behaviour.
+	 *
+	 * Added in version 2.
+	*/
+	__u64 flags;
+#define I915_MMAP_WC 0x1
 };
 
 struct drm_i915_gem_mmap_gtt {
@@ -805,7 +815,6 @@ struct drm_i915_gem_execbuffer2 {
 #define I915_EXEC_BSD                    (2<<0)
 #define I915_EXEC_BLT                    (3<<0)
 #define I915_EXEC_VEBOX                  (4<<0)
-#define I915_EXEC_RS                     (8<<0)
 
 /* Used for switching the constants addressing mode on gen4+ RENDER ring.
  * Gen6+ only supports relative addressing to dynamic state (default) and
@@ -862,7 +871,12 @@ struct drm_i915_gem_execbuffer2 {
 /** Flag to request Watchdog timer support for a batch buffer */
 #define I915_EXEC_ENABLE_WATCHDOG	(1<<15)
 
-#define __I915_EXEC_UNKNOWN_FLAGS -(I915_EXEC_ENABLE_WATCHDOG<<1)
+/** Tell the kernel that the batchbuffer is processed by
+ *  the resource streamer.
+ */
+#define I915_EXEC_RESOURCE_STREAMER	(1<<16)
+
+#define __I915_EXEC_UNKNOWN_FLAGS -(I915_EXEC_RESOURCE_STREAMER<<1)
 
 #define I915_EXEC_CONTEXT_ID_MASK	(0xffffffff)
 #define i915_execbuffer2_set_context_id(eb2, context) \
@@ -1252,85 +1266,6 @@ struct drm_i915_plane_180_rotation {
 struct drm_i915_reserved_reg_bit_2 {
 	__u32 enable;
 	int plane;
-};
-
-/* Total number of DIET entries */
-#define	DPST_DIET_ENTRY_COUNT	33
-/* Value to reset image enhancement interrupt register */
-#define DPST_RESET_IE		0x40004000
-/* No dpst adjustment for backlight, i.e, 100% of the user specified
-   backlight will be applied (dpst will not reduce the backlight). */
-#define DPST_MAX_FACTOR		10000
-/* Threshold that will generate interrupts when crossed */
-#define DEFAULT_GUARDBAND_VAL 30
-struct dpst_ie {
-	enum dpst_diet_alg {
-		i915_DPST_RGB_TRANSLATOR = 0,
-		i915_DPST_YUV_ADDER,
-		i915_DPST_HSV_MULTIPLIER
-	} diet_algorithm;
-	__u32  base_lut_index;	/* Base lut index (192 for legacy mode)*/
-	__u32  factor_present[DPST_DIET_ENTRY_COUNT];
-	__u32  factor_new[DPST_DIET_ENTRY_COUNT];
-	__u32  factor_scalar;
-};
-
-struct dpst_ie_container {
-	struct dpst_ie dpst_ie_st;
-	__u32	dpst_blc_factor;
-	__u32	pipe_n;
-};
-
-struct dpst_initialize_data {
-	__u32 pipe_n;
-	__u32 threshold_gb;
-	__u32 gb_delay;
-	__u32 hist_reg_values;
-	__u32 image_res;
-	__u32 sig_num;
-};
-
-struct dpst_histogram {
-	__u16	event;
-	__u32	status[32];
-	__u32	threshold[12];
-	__u32	gb_val;
-	__u32	gb_int_delay;
-	__u32   bkl_val;
-	enum dpst_hist_mode {
-		i915_DPST_YUV_LUMA_MODE = 0,
-		i915_DPST_HSV_INTENSITY_MODE
-	} hist_mode;
-};
-
-struct dpst_histogram_status_legacy {
-	__u32	pipe_n;
-	struct dpst_histogram histogram_bins;
-};
-
-struct dpst_histogram_status {
-	__u32	pipe_n;
-	__u32	dpst_disable;
-	struct dpst_histogram histogram_bins;
-};
-
-
-struct dpst_initialize_context {
-	enum dpst_call_type {
-		DPST_ENABLE = 1,
-		DPST_DISABLE,
-		DPST_INIT_DATA,
-		DPST_GET_BIN_DATA_LEGACY,
-		DPST_APPLY_LUMA,
-		DPST_RESET_HISTOGRAM_STATUS,
-		DPST_GET_BIN_DATA
-	} dpst_ioctl_type;
-	union {
-		struct dpst_initialize_data		init_data;
-		struct dpst_ie_container		ie_container;
-		struct dpst_histogram_status		hist_status;
-		struct dpst_histogram_status_legacy	hist_status_legacy;
-	};
 };
 
 /*
