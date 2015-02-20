@@ -139,6 +139,7 @@ void *drmSLCreate(void)
     list->magic    = SL_LIST_MAGIC;
     list->level    = 0;
     list->head     = SLCreateEntry(SL_MAX_LEVEL, 0, NULL);
+    if (!list->head) return NULL;
     list->count    = 0;
 
     for (i = 0; i <= SL_MAX_LEVEL; i++) list->head->forward[i] = NULL;
@@ -205,6 +206,7 @@ int drmSLInsert(void *l, unsigned long key, void *value)
     }
 
     entry = SLCreateEntry(level, key, value);
+    if (!entry) return -ENOMEM;
 
 				/* Fix up forward pointers */
     for (i = 0; i <= level; i++) {
