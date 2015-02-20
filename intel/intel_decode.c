@@ -3894,11 +3894,13 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 	int ret;
 	unsigned int index = 0;
 	uint32_t devid;
-	int size = ctx->base_count * 4;
+	int size;
 	void *temp;
 
 	if (!ctx)
 		return;
+
+	size = ctx->base_count * 4;
 
 	/* Put a scratch page full of obviously undefined data after
 	 * the batchbuffer.  This lets us avoid a bunch of length
