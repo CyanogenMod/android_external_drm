@@ -762,7 +762,7 @@ static void i915_get_instruction_src0(uint32_t *data, int i, char *srcname)
 	char swizzle[100];
 
 	i915_get_instruction_src_name((a0 >> 7) & 0x7, src_nr, srcname);
-	sprintf(swizzle, ".%s%s%s%s", swizzle_x, swizzle_y, swizzle_z,
+	snprintf(swizzle, sizeof(swizzle), ".%s%s%s%s", swizzle_x, swizzle_y, swizzle_z,
 		swizzle_w);
 	if (strcmp(swizzle, ".xyzw") != 0)
 		strcat(srcname, swizzle);
@@ -780,7 +780,7 @@ static void i915_get_instruction_src1(uint32_t *data, int i, char *srcname)
 	char swizzle[100];
 
 	i915_get_instruction_src_name((a1 >> 13) & 0x7, src_nr, srcname);
-	sprintf(swizzle, ".%s%s%s%s", swizzle_x, swizzle_y, swizzle_z,
+	snprintf(swizzle, sizeof(swizzle), ".%s%s%s%s", swizzle_x, swizzle_y, swizzle_z,
 		swizzle_w);
 	if (strcmp(swizzle, ".xyzw") != 0)
 		strcat(srcname, swizzle);
@@ -797,7 +797,7 @@ static void i915_get_instruction_src2(uint32_t *data, int i, char *srcname)
 	char swizzle[100];
 
 	i915_get_instruction_src_name((a2 >> 21) & 0x7, src_nr, srcname);
-	sprintf(swizzle, ".%s%s%s%s", swizzle_x, swizzle_y, swizzle_z,
+	snprintf(swizzle, sizeof(swizzle), ".%s%s%s%s", swizzle_x, swizzle_y, swizzle_z,
 		swizzle_w);
 	if (strcmp(swizzle, ".xyzw") != 0)
 		strcat(srcname, swizzle);
@@ -926,7 +926,7 @@ i915_decode_dcl(struct drm_intel_decode *ctx, int i, char *instr_prefix)
 
 	switch ((d0 >> 19) & 0x3) {
 	case 1:
-		sprintf(dcl_mask, ".%s%s%s%s", dcl_x, dcl_y, dcl_z, dcl_w);
+		snprintf(dcl_mask, sizeof(dcl_mask), ".%s%s%s%s", dcl_x, dcl_y, dcl_z, dcl_w);
 		if (strcmp(dcl_mask, ".") == 0)
 			fprintf(out, "bad (empty) dcl mask\n");
 
