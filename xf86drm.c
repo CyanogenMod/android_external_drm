@@ -585,7 +585,7 @@ static int drmOpenByName(const char *name)
 	if ((fd = open(proc_name, 0, 0)) >= 0) {
 	    retcode = read(fd, buf, sizeof(buf)-1);
 	    close(fd);
-	    if (retcode) {
+	    if (retcode > 0) {
 		buf[retcode-1] = '\0';
 		for (driver = pt = buf; *pt && *pt != ' '; ++pt)
 		    ;
