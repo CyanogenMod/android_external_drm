@@ -186,18 +186,23 @@ static unsigned long drmGetKeyFromFd(int fd)
 drmHashEntry *drmGetEntry(int fd)
 {
     unsigned long key = drmGetKeyFromFd(fd);
-    void          *value;
+    void          *value = NULL;
     drmHashEntry  *entry;
 
     if (!drmHashTable)
 	drmHashTable = drmHashCreate();
 
-    if (drmHashLookup(drmHashTable, key, &value)) {
+    if (drmHashTable && drmHashLookup(drmHashTable, key, &value)) {
 	entry           = drmMalloc(sizeof(*entry));
 	entry->fd       = fd;
 	entry->f        = NULL;
 	entry->tagTable = drmHashCreate();
-	drmHashInsert(drmHashTable, key, entry);
+	if (entry->tagTable) {
+		drmHashInsert(drmHashTable, key, entry);
+	} else {
+		drmFree(entry);
+		entry = NULL;
+	}
     } else {
 	entry = value;
     }
@@ -1099,6 +1104,8 @@ int drmClose(int fd)
 {
     unsigned long key    = drmGetKeyFromFd(fd);
     drmHashEntry  *entry = drmGetEntry(fd);
+    if(!entry)
+	return -ENOMEM;
 
     drmHashDestroy(entry->tagTable);
     entry->fd       = 0;
@@ -2088,7 +2095,7 @@ int drmAddContextTag(int fd, drm_context_t context, void *tag)
 {
     drmHashEntry  *entry = drmGetEntry(fd);
 
-    if (drmHashInsert(entry->tagTable, context, tag)) {
+    if (entry && drmHashInsert(entry->tagTable, context, tag)) {
 	drmHashDelete(entry->tagTable, context);
 	drmHashInsert(entry->tagTable, context, tag);
     }
@@ -2099,13 +2106,18 @@ int drmDelContextTag(int fd, drm_context_t context)
 {
     drmHashEntry  *entry = drmGetEntry(fd);
 
-    return drmHashDelete(entry->tagTable, context);
+    if (entry)
+	return drmHashDelete(entry->tagTable, context);
+    return -ENOMEM;
 }
 
 void *drmGetContextTag(int fd, drm_context_t context)
 {
-    drmHashEntry  *entry = drmGetEntry(fd);
     void          *value;
+    drmHashEntry  *entry = drmGetEntry(fd);
+
+    if (!entry)
+        return NULL;
 
     if (drmHashLookup(entry->tagTable, context, &value))
 	return NULL;
