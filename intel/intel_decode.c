@@ -3907,6 +3907,8 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 	 * checking in statically sized packets.
 	 */
 	temp = malloc(size + 4096);
+	if (!temp)
+		return;
 	memcpy(temp, ctx->base_data, size);
 	memset((char *)temp + size, 0xd0, 4096);
 	ctx->data = temp;

@@ -2261,6 +2261,9 @@ aub_write_bo_data(drm_intel_bo *bo, uint32_t offset, uint32_t size)
 	unsigned int i;
 
 	data = malloc(bo->size);
+	if (!data)
+		return;
+
 	drm_intel_bo_get_subdata(bo, offset, size, data);
 
 	/* Easy mode: write out bo with no relocations */

@@ -40,6 +40,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #define SL_MAIN 0
 
@@ -124,6 +125,7 @@ static int SLRandomLevel(void)
     SL_RANDOM_DECL;
 
     SL_RANDOM_INIT(SL_RANDOM_SEED);
+    if (!state) return -ENOMEM;
     
     while ((SL_RANDOM & 0x01) && level < SL_MAX_LEVEL) ++level;
     return level;
