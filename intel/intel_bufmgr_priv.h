@@ -312,6 +312,55 @@ struct _drm_intel_bufmgr {
 	 */
 	int (*bo_get_userdata) (drm_intel_bo *bo, uint32_t *userdata);
 
+
+	/**
+	 * Creates an object's userdata.
+	 *
+	 * \param bo Buffer to which userdata will be attached
+	 * \param flags Controls how the data may be used
+	 * \param bytes Number of bytes to allocate & set
+	 * \param data Pointer to data to be attached (or NULL)
+	 * \param avail_bytes On return, set to the number of bytes
+	 *       of userdata already allocated for the object.
+	 *       useful when return code is -EXIST 
+	 */
+	int (*bo_create_userdata_blk) (drm_intel_bo *bo,
+				       uint16_t      flags,
+				       uint32_t	     bytes,
+				       const void   *data,
+				       uint32_t     *avail_bytes);
+
+	/**
+	 * Change an object's userdata.
+	 *
+	 * \param bo Buffer whose userdata will be set
+	 * \param offset Offset to first byte to set
+	 * \param bytes Number of bytes to set
+	 * \param data Pointer to data to be set (must not be NULL)
+	 * \param avail_bytes On return, set to the number of bytes
+	 *        of userdata actually allocated to the object
+	 */
+	int (*bo_set_userdata_blk)    (drm_intel_bo *bo,
+				       uint32_t	     offset,
+				       uint32_t	     bytes,
+				       const void   *data,
+				       uint32_t     *avail_bytes);
+	/**
+	 * Retrieves an object's userdata.
+	 *
+	 * \param bo Buffer from which userdata will be retrieved
+	 * \param offset Offset to first byte to retrieve
+	 * \param bytes Number of bytes to retrieve
+	 * \param data Pointer to buffer to return data in (must not be NULL)
+	 * \param avail_bytes On return, set to the number of bytes
+	 *        of userdata actually allocated to the object
+	 */
+	int (*bo_get_userdata_blk)    (drm_intel_bo *bo,
+				       uint32_t	     offset,
+				       uint32_t	     bytes,
+				       void         *data,
+				       uint32_t     *avail_bytes);
+
 	/**< Enables verbose debugging printouts */
 	int debug;
 };
