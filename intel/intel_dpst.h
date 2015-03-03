@@ -37,7 +37,8 @@ int drm_intel_dpst_context_init(int fd,
 				uint32_t gb_delay,
 				uint32_t *pipe_n,
 				uint32_t *image_res,
-				uint32_t sig_num);
+				uint32_t sig_num,
+				uint32_t hist_reg_values);
 int drm_intel_dpst_context_enable(int fd);
 int drm_intel_dpst_context_disable(int fd);
 int drm_intel_dpst_context_get_bin(int fd,
