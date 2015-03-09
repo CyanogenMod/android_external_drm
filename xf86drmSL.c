@@ -40,6 +40,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #define SL_MAIN 0
 
@@ -124,6 +125,7 @@ static int SLRandomLevel(void)
     SL_RANDOM_DECL;
 
     SL_RANDOM_INIT(SL_RANDOM_SEED);
+    if (!state) return -ENOMEM;
     
     while ((SL_RANDOM & 0x01) && level < SL_MAX_LEVEL) ++level;
     return level;
@@ -139,6 +141,7 @@ void *drmSLCreate(void)
     list->magic    = SL_LIST_MAGIC;
     list->level    = 0;
     list->head     = SLCreateEntry(SL_MAX_LEVEL, 0, NULL);
+    if (!list->head) return NULL;
     list->count    = 0;
 
     for (i = 0; i <= SL_MAX_LEVEL; i++) list->head->forward[i] = NULL;
@@ -205,6 +208,7 @@ int drmSLInsert(void *l, unsigned long key, void *value)
     }
 
     entry = SLCreateEntry(level, key, value);
+    if (!entry) return -ENOMEM;
 
 				/* Fix up forward pointers */
     for (i = 0; i <= level; i++) {
@@ -267,6 +271,7 @@ int drmSLLookupNeighbors(void *l, unsigned long key,
     SLEntryPtr    update[SL_MAX_LEVEL + 1];
     int           retcode = 0;
 
+    SLLocate(list, key, update);
     *prev_key   = *next_key   = key;
     *prev_value = *next_value = NULL;
 	

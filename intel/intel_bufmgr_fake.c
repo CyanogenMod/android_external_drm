@@ -556,8 +556,10 @@ evict_lru(drm_intel_bufmgr_fake *bufmgr_fake, unsigned int max_fence)
 							    max_fence))
 			return 0;
 
-		set_dirty(&bo_fake->bo);
-		bo_fake->block = NULL;
+		if (bo_fake) {
+			set_dirty(&bo_fake->bo);
+			bo_fake->block = NULL;
+		}
 
 		free_block(bufmgr_fake, block, 0);
 		return 1;
@@ -579,8 +581,10 @@ evict_mru(drm_intel_bufmgr_fake *bufmgr_fake)
 		if (bo_fake && (bo_fake->flags & BM_NO_FENCE_SUBDATA))
 			continue;
 
-		set_dirty(&bo_fake->bo);
-		bo_fake->block = NULL;
+		if (bo_fake) {
+			set_dirty(&bo_fake->bo);
+			bo_fake->block = NULL;
+		}
 
 		free_block(bufmgr_fake, block, 0);
 		return 1;
@@ -1273,6 +1277,8 @@ drm_intel_fake_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	if (bo_fake->relocs == NULL) {
 		bo_fake->relocs =
 		    malloc(sizeof(struct fake_buffer_reloc) * MAX_RELOCS);
+		if (!bo_fake->relocs)
+			return -ENOMEM;
 	}
 
 	r = &bo_fake->relocs[bo_fake->nr_relocs++];
@@ -1592,6 +1598,8 @@ drm_intel_bufmgr *drm_intel_bufmgr_fake_init(int fd,
 	drm_intel_bufmgr_fake *bufmgr_fake;
 
 	bufmgr_fake = calloc(1, sizeof(*bufmgr_fake));
+	if (!bufmgr_fake)
+		return NULL;
 
 	if (pthread_mutex_init(&bufmgr_fake->lock, NULL) != 0) {
 		free(bufmgr_fake);

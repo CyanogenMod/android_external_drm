@@ -186,18 +186,25 @@ static unsigned long drmGetKeyFromFd(int fd)
 drmHashEntry *drmGetEntry(int fd)
 {
     unsigned long key = drmGetKeyFromFd(fd);
-    void          *value;
+    void          *value = NULL;
     drmHashEntry  *entry;
 
     if (!drmHashTable)
 	drmHashTable = drmHashCreate();
 
-    if (drmHashLookup(drmHashTable, key, &value)) {
+    if (drmHashTable && drmHashLookup(drmHashTable, key, &value)) {
 	entry           = drmMalloc(sizeof(*entry));
+	if (!entry)
+	    return NULL;
 	entry->fd       = fd;
 	entry->f        = NULL;
 	entry->tagTable = drmHashCreate();
-	drmHashInsert(drmHashTable, key, entry);
+	if (entry->tagTable) {
+		drmHashInsert(drmHashTable, key, entry);
+	} else {
+		drmFree(entry);
+		entry = NULL;
+	}
     } else {
 	entry = value;
     }
@@ -580,7 +587,7 @@ static int drmOpenByName(const char *name)
 	if ((fd = open(proc_name, 0, 0)) >= 0) {
 	    retcode = read(fd, buf, sizeof(buf)-1);
 	    close(fd);
-	    if (retcode) {
+	    if (retcode > 0) {
 		buf[retcode-1] = '\0';
 		for (driver = pt = buf; *pt && *pt != ' '; ++pt)
 		    ;
@@ -730,6 +737,8 @@ drmVersionPtr drmGetVersion(int fd)
 {
     drmVersionPtr retval;
     drm_version_t *version = drmMalloc(sizeof(*version));
+    if (!version)
+	return NULL;
 
     version->name_len    = 0;
     version->name        = NULL;
@@ -762,7 +771,9 @@ drmVersionPtr drmGetVersion(int fd)
     if (version->desc_len) version->desc[version->desc_len] = '\0';
 
     retval = drmMalloc(sizeof(*retval));
-    drmCopyVersion(retval, version);
+    if (retval)
+        drmCopyVersion(retval, version);
+
     drmFreeKernelVersion(version);
     return retval;
 }
@@ -784,6 +795,8 @@ drmVersionPtr drmGetVersion(int fd)
 drmVersionPtr drmGetLibVersion(int fd)
 {
     drm_version_t *version = drmMalloc(sizeof(*version));
+    if (!version)
+	return NULL;
 
     /* Version history:
      *   NOTE THIS MUST NOT GO ABOVE VERSION 1.X due to drivers needing it
@@ -1099,6 +1112,8 @@ int drmClose(int fd)
 {
     unsigned long key    = drmGetKeyFromFd(fd);
     drmHashEntry  *entry = drmGetEntry(fd);
+    if(!entry)
+	return -ENOMEM;
 
     drmHashDestroy(entry->tagTable);
     entry->fd       = 0;
@@ -1183,14 +1198,25 @@ drmBufInfoPtr drmGetBufInfo(int fd)
 	}
 
 	retval = drmMalloc(sizeof(*retval));
+	if (!retval) {
+	    drmFree(info.list);
+	    return NULL;
+	}
+
 	retval->count = info.count;
 	retval->list  = drmMalloc(info.count * sizeof(*retval->list));
-	for (i = 0; i < info.count; i++) {
-	    retval->list[i].count     = info.list[i].count;
-	    retval->list[i].size      = info.list[i].size;
-	    retval->list[i].low_mark  = info.list[i].low_mark;
-	    retval->list[i].high_mark = info.list[i].high_mark;
+	if (retval->list) {
+	    for (i = 0; i < info.count; i++) {
+	        retval->list[i].count     = info.list[i].count;
+	        retval->list[i].size      = info.list[i].size;
+	        retval->list[i].low_mark  = info.list[i].low_mark;
+	        retval->list[i].high_mark = info.list[i].high_mark;
+	    }
+	} else {
+	    drmFree(retval);
+	    retval = NULL;
 	}
+
 	drmFree(info.list);
 	return retval;
     }
@@ -1236,13 +1262,23 @@ drmBufMapPtr drmMapBufs(int fd)
 	}
 
 	retval = drmMalloc(sizeof(*retval));
+	if (!retval) {
+	    drmFree(bufs.list);
+            return NULL;
+	}
+
 	retval->count = bufs.count;
 	retval->list  = drmMalloc(bufs.count * sizeof(*retval->list));
-	for (i = 0; i < bufs.count; i++) {
-	    retval->list[i].idx     = bufs.list[i].idx;
-	    retval->list[i].total   = bufs.list[i].total;
-	    retval->list[i].used    = 0;
-	    retval->list[i].address = bufs.list[i].address;
+	if (retval->list) {
+	    for (i = 0; i < bufs.count; i++) {
+	        retval->list[i].idx     = bufs.list[i].idx;
+	        retval->list[i].total   = bufs.list[i].total;
+	        retval->list[i].used    = 0;
+	        retval->list[i].address = bufs.list[i].address;
+	    }
+	} else {
+	    drmFree(retval);
+	    retval = NULL;
 	}
 
 	drmFree(bufs.list);
@@ -2088,7 +2124,7 @@ int drmAddContextTag(int fd, drm_context_t context, void *tag)
 {
     drmHashEntry  *entry = drmGetEntry(fd);
 
-    if (drmHashInsert(entry->tagTable, context, tag)) {
+    if (entry && drmHashInsert(entry->tagTable, context, tag)) {
 	drmHashDelete(entry->tagTable, context);
 	drmHashInsert(entry->tagTable, context, tag);
     }
@@ -2099,13 +2135,18 @@ int drmDelContextTag(int fd, drm_context_t context)
 {
     drmHashEntry  *entry = drmGetEntry(fd);
 
-    return drmHashDelete(entry->tagTable, context);
+    if (entry)
+	return drmHashDelete(entry->tagTable, context);
+    return -ENOMEM;
 }
 
 void *drmGetContextTag(int fd, drm_context_t context)
 {
-    drmHashEntry  *entry = drmGetEntry(fd);
     void          *value;
+    drmHashEntry  *entry = drmGetEntry(fd);
+
+    if (!entry)
+        return NULL;
 
     if (drmHashLookup(entry->tagTable, context, &value))
 	return NULL;
@@ -2600,6 +2641,9 @@ int drmCSCIoctl(int fd, struct CSCCoeff_Matrix *CSC_Matrix)
     }
 
     pCSCCoeff = (struct csc_coeff *)malloc(sizeof(struct csc_coeff));
+    if (!pCSCCoeff)
+	return -ENOMEM;
+
     Calc_CSC_Param(CSC_Matrix, pCSCCoeff, devid);
     pCSCCoeff->crtc_id = CSC_Matrix->crtc_id;
 

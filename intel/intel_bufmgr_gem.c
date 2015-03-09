@@ -432,6 +432,8 @@ drm_intel_add_validate_buffer(drm_intel_bo *bo)
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	int index;
+	struct drm_i915_gem_exec_object *exec_objects;
+	drm_intel_bo **exec_bos;
 
 	if (bo_gem->validate_index != -1)
 		return;
@@ -443,12 +445,20 @@ drm_intel_add_validate_buffer(drm_intel_bo *bo)
 		if (new_size == 0)
 			new_size = 5;
 
-		bufmgr_gem->exec_objects =
-		    realloc(bufmgr_gem->exec_objects,
-			    sizeof(*bufmgr_gem->exec_objects) * new_size);
-		bufmgr_gem->exec_bos =
-		    realloc(bufmgr_gem->exec_bos,
+		exec_objects = realloc(bufmgr_gem->exec_objects,
+				sizeof(*bufmgr_gem->exec_objects) * new_size);
+		if (!exec_objects)
+			return;
+
+		bufmgr_gem->exec_objects = exec_objects;
+
+		exec_bos = realloc(bufmgr_gem->exec_bos,
 			    sizeof(*bufmgr_gem->exec_bos) * new_size);
+		if (!exec_bos)
+			return;
+
+		bufmgr_gem->exec_bos = exec_bos;
+
 		bufmgr_gem->exec_size = new_size;
 	}
 
@@ -470,6 +480,8 @@ drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
 	int index;
+	struct drm_i915_gem_exec_object2 *exec2_objects;
+	drm_intel_bo **exec_bos;
 
 	if (bo_gem->validate_index != -1) {
 		if (need_fence)
@@ -485,12 +497,19 @@ drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
 		if (new_size == 0)
 			new_size = 5;
 
-		bufmgr_gem->exec2_objects =
-			realloc(bufmgr_gem->exec2_objects,
+		exec2_objects = realloc(bufmgr_gem->exec2_objects,
 				sizeof(*bufmgr_gem->exec2_objects) * new_size);
-		bufmgr_gem->exec_bos =
-			realloc(bufmgr_gem->exec_bos,
+		if (!exec2_objects)
+			return;
+
+		bufmgr_gem->exec2_objects = exec2_objects;
+
+		exec_bos = realloc(bufmgr_gem->exec_bos,
 				sizeof(*bufmgr_gem->exec_bos) * new_size);
+		if (!exec_bos)
+			return;
+
+		bufmgr_gem->exec_bos = exec_bos;
 		bufmgr_gem->exec_size = new_size;
 	}
 
@@ -2242,6 +2261,9 @@ aub_write_bo_data(drm_intel_bo *bo, uint32_t offset, uint32_t size)
 	unsigned int i;
 
 	data = malloc(bo->size);
+	if (!data)
+		return;
+
 	drm_intel_bo_get_subdata(bo, offset, size, data);
 
 	/* Easy mode: write out bo with no relocations */

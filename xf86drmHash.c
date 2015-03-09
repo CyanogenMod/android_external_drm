@@ -70,6 +70,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #define HASH_MAIN 0
 
@@ -79,6 +80,7 @@
 
 #define HASH_MAGIC 0xdeadbeef
 #define HASH_DEBUG 0
+#define HASH_INVALID 0xffffffff	/* A value that is out of bound */
 #define HASH_SIZE  512		/* Good for about 100 entries */
 				/* If you change this value, you probably
                                    have to change the HashHash hashing
@@ -137,6 +139,8 @@ static unsigned long HashHash(unsigned long key)
     if (!init) {
 	HASH_RANDOM_DECL;
 	HASH_RANDOM_INIT(37);
+	if (!state)
+		return HASH_INVALID;
 	for (i = 0; i < 256; i++) scatter[i] = HASH_RANDOM;
 	HASH_RANDOM_DESTROY;
 	++init;
@@ -203,6 +207,9 @@ static HashBucketPtr HashFind(HashTablePtr table,
 
     if (h) *h = hash;
 
+    if (hash == HASH_INVALID)
+	return NULL;
+
     for (bucket = table->buckets[hash]; bucket; bucket = bucket->next) {
 	if (bucket->key == key) {
 	    if (prev) {
@@ -244,6 +251,7 @@ int drmHashInsert(void *t, unsigned long key, void *value)
     if (table->magic != HASH_MAGIC) return -1; /* Bad magic */
 
     if (HashFind(table, key, &hash)) return 1; /* Already in table */
+    if (hash == HASH_INVALID) return -1;
 
     bucket               = HASH_ALLOC(sizeof(*bucket));
     if (!bucket) return -1;	/* Error */
@@ -267,6 +275,7 @@ int drmHashDelete(void *t, unsigned long key)
 
     bucket = HashFind(table, key, &hash);
 
+    if (hash == HASH_INVALID) return -1;
     if (!bucket) return 1;	/* Not found */
 
     table->buckets[hash] = bucket->next;
