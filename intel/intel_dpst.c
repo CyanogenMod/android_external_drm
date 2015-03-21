@@ -38,7 +38,8 @@ drm_intel_dpst_context_init(int fd,
 			    uint32_t gb_delay,
 			    uint32_t *pipe_n,
 			    uint32_t *image_res,
-			    uint32_t sig_num)
+			    uint32_t sig_num,
+			    uint32_t hist_reg_values)
 {
 	int ret=0;
 
@@ -49,6 +50,7 @@ drm_intel_dpst_context_init(int fd,
 
 	dpst_context_ioctl.init_data.image_res = *image_res;
 	dpst_context_ioctl.init_data.sig_num = sig_num;
+	dpst_context_ioctl.init_data.hist_reg_values = hist_reg_values;
 	ret = drmIoctl(fd, DRM_IOCTL_I915_DPST_CONTEXT, &dpst_context_ioctl);
 
 	if (ret != 0)
