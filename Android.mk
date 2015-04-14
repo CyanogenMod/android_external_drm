@@ -22,6 +22,9 @@
 #
 
 LOCAL_PATH := $(call my-dir)
+
+ifeq ($(TARGET_BOARD_PLATFORM),gmin)
+
 include $(CLEAR_VARS)
 
 LIBDRM_TOP := $(LOCAL_PATH)
@@ -56,3 +59,4 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(LOCAL_PATH)/intel/Android.mk
 
+endif # ifeq ($(TARGET_BOARD_PLATFORM),gmin)
